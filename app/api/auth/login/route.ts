@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { User } from '@/lib/models/User';
-import { verifyPassword, generateToken, setAuthCookie } from '@/lib/auth';
+import { verifyPassword, generateToken } from '@/lib/auth';
 import { loginSchema } from '@/lib/validation';
 
 export async function POST(request: NextRequest) {
@@ -68,8 +68,14 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
 
-    // Set auth cookie
-    await setAuthCookie(token);
+    // Attach auth cookie to response
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/',
+    });
 
     return response;
   } catch (error) {
