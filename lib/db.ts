@@ -1,31 +1,28 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || '';
-
-if (!MONGODB_URI) {
-  throw new Error('MONGODB_URI is not defined in environment variables');
-}
-
-let cached = global as any;
+let cached = (global as any).mongoose || { conn: null, promise: null };
 
 if (!cached.mongoose) {
-  cached.mongoose = {
-    conn: null,
-    promise: null,
-  };
+  (global as any).mongoose = cached;
 }
 
 export async function connectDB() {
-  if (cached.mongoose.conn) {
-    return cached.mongoose.conn;
+  const MONGODB_URI = process.env.MONGODB_URI;
+
+  if (!MONGODB_URI) {
+    throw new Error('MONGODB_URI is not defined in environment variables');
   }
 
-  if (!cached.mongoose.promise) {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
     const opts = {
       bufferCommands: false,
     };
 
-    cached.mongoose.promise = mongoose
+    cached.promise = mongoose
       .connect(MONGODB_URI, opts)
       .then((mongoose) => {
         return mongoose;
@@ -33,11 +30,11 @@ export async function connectDB() {
   }
 
   try {
-    cached.mongoose.conn = await cached.mongoose.promise;
+    cached.conn = await cached.promise;
   } catch (e) {
-    cached.mongoose.promise = null;
+    cached.promise = null;
     throw e;
   }
 
-  return cached.mongoose.conn;
+  return cached.conn;
 }
