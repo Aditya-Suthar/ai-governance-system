@@ -10,10 +10,44 @@ const categoryKeywords: Record<ComplaintCategory, string[]> = {
 };
 
 const priorityKeywords = {
-  Critical: ['urgent', 'critical', 'emergency', 'immediate', 'severe', 'dangerous', 'life threatening', 'accident'],
-  High: ['serious', 'important', 'major', 'significant', 'affecting many', 'widespread'],
-  Medium: ['moderate', 'normal', 'regular', 'standard'],
-  Low: ['minor', 'small', 'little', 'insignificant'],
+  Critical: [
+    'urgent',
+    'critical',
+    'emergency',
+    'immediate',
+    'severe',
+    'dangerous',
+    'life threatening',
+    'life-threatening',
+    'accident',
+    'violence',
+    'attack',
+    'fire',
+    'explosion',
+    'collapsed',
+    'structural failure',
+    'gas leak',
+    'poison',
+    'toxic',
+    'injured',
+    'unconscious',
+  ],
+  High: [
+    'serious',
+    'important',
+    'major',
+    'significant',
+    'affecting many',
+    'widespread',
+    'frequent',
+    'recurring',
+    'blocked',
+    'hazard',
+    'unsafe',
+    'critical infrastructure',
+  ],
+  Medium: ['moderate', 'normal', 'regular', 'standard', 'inconvenience', 'delay'],
+  Low: ['minor', 'small', 'little', 'insignificant', 'cosmetic', 'appearance only'],
 };
 
 export function categorizeComplaint(title: string, description: string): ComplaintCategory {
