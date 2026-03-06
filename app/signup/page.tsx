@@ -39,7 +39,7 @@ export default function SignupPage() {
         formData.password,
         formData.confirmPassword,
         formData.name,
-        role,
+        role as "citizen" | "authority",
         formData.phone || undefined
       );
       

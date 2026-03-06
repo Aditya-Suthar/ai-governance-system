@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
+import crypto from "crypto"
 import { connectDB } from "@/lib/db"
 import { User } from "@/lib/models/User"
 import { hashPassword, generateToken } from "@/lib/auth"
 import { signupSchema } from "@/lib/validation"
+import { sendVerificationEmail } from "@/lib/email"
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,6 +41,10 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = hashPassword(password)
 
+    // Generate email verification token
+    const emailVerificationToken = crypto.randomBytes(32).toString("hex")
+    const emailVerificationTokenExpires = new Date(Date.now() + 1000 * 60 * 60 * 24) // 24 hours
+
     // Create user
     const user = new User({
       name,
@@ -46,9 +52,15 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       role,
       phone,
+      emailVerified: false,
+      emailVerificationToken,
+      emailVerificationTokenExpires,
     })
 
     await user.save()
+
+    // Send verification email (logs link in dev)
+    await sendVerificationEmail(user)
 
     // Generate JWT token
     const token = generateToken({

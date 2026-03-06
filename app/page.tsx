@@ -1,9 +1,33 @@
+"use client"
+
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Navigation } from '@/components/shared/Navigation';
 import { CheckCircle, Users, Zap, Shield } from 'lucide-react';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function HomePage() {
+  const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading || user) {
+    // While checking auth or redirecting, avoid showing guest landing UI
+    return (
+      <>
+        <Navigation />
+        <main className="min-h-screen bg-gradient-to-b from-white to-slate-50" />
+      </>
+    );
+  }
+
   return (
     <>
       <Navigation />

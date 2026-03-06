@@ -39,6 +39,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Require verified email for login (only for users created after adding this field)
+    if (user.emailVerified === false) {
+      return NextResponse.json(
+        { error: 'Please verify your email before logging in' },
+        { status: 403 }
+      );
+    }
+
     // Verify password
     if (!verifyPassword(password, user.password)) {
       return NextResponse.json(
