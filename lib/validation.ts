@@ -12,7 +12,7 @@ export const signupSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 
   confirmPassword: z.string().min(6),
-  
+
   role: z.enum(["citizen", "authority"]),
 
   phone: z.string().optional(),
@@ -45,12 +45,12 @@ export const complaintSchema = z.object({
   location: z.string().min(5, "Location is required"),
 
   category: z.enum([
-    "Infrastructure",
+    "Roads",
+    "Water",
+    "Electricity",
     "Healthcare",
-    "Education",
+    "Sanitation",
     "Safety",
-    "Utilities",
-    "Other",
   ]),
 })
 

@@ -20,9 +20,9 @@ export default function AdminComplaintsPage() {
   
   const [complaints, setComplaints] = useState<IComplaint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get('status') || '');
-  const [priorityFilter, setPriorityFilter] = useState<string>('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get('status') || 'all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'authority')) {
@@ -34,10 +34,9 @@ export default function AdminComplaintsPage() {
     const fetchComplaints = async () => {
       try {
         const params = new URLSearchParams();
-        if (statusFilter) params.append('status', statusFilter);
-        if (priorityFilter) params.append('priority', priorityFilter);
-        if (categoryFilter) params.append('category', categoryFilter);
-
+        if (statusFilter !== 'all') params.append('status', statusFilter);
+        if (priorityFilter !== 'all') params.append('priority', priorityFilter);
+        if (categoryFilter !== 'all') params.append('category', categoryFilter);
         const response = await fetch(`/api/admin/complaints?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
@@ -128,7 +127,7 @@ export default function AdminComplaintsPage() {
                       <SelectValue placeholder="All Statuses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Statuses</SelectItem>
+                      <SelectItem value="all">All Statuses</SelectItem>
                       <SelectItem value="Pending">Pending</SelectItem>
                       <SelectItem value="In Progress">In Progress</SelectItem>
                       <SelectItem value="Resolved">Resolved</SelectItem>
@@ -143,7 +142,7 @@ export default function AdminComplaintsPage() {
                       <SelectValue placeholder="All Priorities" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Priorities</SelectItem>
+                      <SelectItem value="all">All Priorities</SelectItem>
                       <SelectItem value="Critical">Critical</SelectItem>
                       <SelectItem value="High">High</SelectItem>
                       <SelectItem value="Medium">Medium</SelectItem>
@@ -159,7 +158,7 @@ export default function AdminComplaintsPage() {
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Categories</SelectItem>
+                      <SelectItem value="all">All Categories</SelectItem>
                       <SelectItem value="Infrastructure">Infrastructure</SelectItem>
                       <SelectItem value="Healthcare">Healthcare</SelectItem>
                       <SelectItem value="Education">Education</SelectItem>
@@ -175,9 +174,9 @@ export default function AdminComplaintsPage() {
                   <Button 
                     variant="outline" 
                     onClick={() => {
-                      setStatusFilter('');
-                      setPriorityFilter('');
-                      setCategoryFilter('');
+                      setStatusFilter('all');
+                      setPriorityFilter('all');
+                      setCategoryFilter('all');
                     }}
                     className="w-full"
                   >
@@ -201,9 +200,9 @@ export default function AdminComplaintsPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">No Complaints Found</h3>
                   <p className="text-gray-600 mb-6">No complaints match the current filters.</p>
                   <Button variant="outline" onClick={() => {
-                    setStatusFilter('');
-                    setPriorityFilter('');
-                    setCategoryFilter('');
+                    setStatusFilter('all');
+                    setPriorityFilter('all');
+                    setCategoryFilter('all');
                   }}>
                     Clear Filters
                   </Button>
@@ -241,8 +240,8 @@ export default function AdminComplaintsPage() {
                         </p>
                       </div>
                       <Button variant="ghost" size="sm" asChild className="flex-shrink-0">
-                        <Link href={`/complaint/${complaint._id}`}>
-                          View
+                        <Link href={`/admin/complaints/${complaint._id}`}>
+                          View →
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Link>
                       </Button>

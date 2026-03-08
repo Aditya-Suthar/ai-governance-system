@@ -2,7 +2,13 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export type ComplaintStatus = 'Pending' | 'In Progress' | 'Resolved';
 export type ComplaintPriority = 'Low' | 'Medium' | 'High' | 'Critical';
-export type ComplaintCategory = 'Infrastructure' | 'Healthcare' | 'Education' | 'Safety' | 'Utilities' | 'Other';
+export type ComplaintCategory =
+  | 'Roads'
+  | 'Water'
+  | 'Electricity'
+  | 'Healthcare'
+  | 'Sanitation'
+  | 'Safety';
 
 export interface IComplaint extends Document {
   userId: mongoose.Types.ObjectId;
@@ -42,8 +48,15 @@ const complaintSchema = new Schema<IComplaint>(
     },
     category: {
       type: String,
-      enum: ['Infrastructure', 'Healthcare', 'Education', 'Safety', 'Utilities', 'Other'],
-      default: 'Other',
+      enum: [
+        'Roads',
+        'Water',
+        'Electricity',
+        'Healthcare',
+        'Sanitation',
+        'Safety',
+      ],
+      required: true,
     },
     status: {
       type: String,
@@ -66,4 +79,5 @@ const complaintSchema = new Schema<IComplaint>(
 );
 
 export const Complaint =
-  mongoose.models.Complaint || mongoose.model<IComplaint>('Complaint', complaintSchema);
+  mongoose.models.Complaint ||
+  mongoose.model<IComplaint>('Complaint', complaintSchema);

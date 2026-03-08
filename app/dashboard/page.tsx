@@ -1,5 +1,10 @@
 'use client';
 
+type Message = {
+  role: "user" | "ai";
+  content: string;
+};
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -11,17 +16,45 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Clock, CheckCircle, ArrowRight } from 'lucide-react';
 import { IComplaint } from '@/lib/models/Complaint';
 
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   const [complaints, setComplaints] = useState<IComplaint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAI, setShowAI] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);  
+  const [input, setInput] = useState("");
+
+  const sendMessage = async () => {
+  if (!input.trim()) return;
+  
+  const userMessage: Message = { role: "user", content: input };
+  setMessages(prev => [...prev, userMessage]);
+
+  const response = await fetch("/api/ai", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message: input })
+  });
+
+  const data = await response.json();
+
+  const aiMessage: Message = {
+  role: "ai",
+  content: data.reply
+};
+
+  setMessages(prev => [...prev, aiMessage]);
+  setInput("");
+};
 
   useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'citizen')) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
+  console.log("USER:", user);
+  console.log("AUTH LOADING:", authLoading);
+}, [user, authLoading]);
 
   useEffect(() => {
     const fetchComplaints = async () => {
@@ -84,8 +117,8 @@ export default function DashboardPage() {
     }
   };
 
-  if (authLoading || !user) {
-    return <div className="min-h-screen bg-slate-50" />;
+  if (authLoading) {
+  return <div className="min-h-screen bg-slate-50">Loading...</div>;
   }
 
   const stats = {
@@ -98,17 +131,27 @@ export default function DashboardPage() {
   return (
     <>
       <Navigation />
-      <main className="min-h-screen bg-slate-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-slate-50 py-12 relative">
+       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-6 items-start">
+        <div className={`transition-all duration-300 ${showAI ? "w-[70%]" : "w-full"}`}>
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Complaints</h1>
               <p className="text-gray-600 mt-2">Track and manage your submitted complaints</p>
             </div>
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
-              <Link href="/complaint/new">Report New Complaint</Link>
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowAI(!showAI)}
+                variant="outline"
+              >
+                AI
+              </Button>
+
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
+                <Link href="/complaints/new">Report New Complaint</Link>
+              </Button>
+            </div>
           </div>
 
           {/* Statistics */}
@@ -152,7 +195,7 @@ export default function DashboardPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">No Complaints Yet</h3>
                   <p className="text-gray-600 mb-6">You haven&apos;t reported any complaints yet.</p>
                   <Button asChild>
-                    <Link href="/complaint/new">Report Your First Complaint</Link>
+                    <Link href="/complaints/new">Report Your First Complaint</Link>
                   </Button>
                 </div>
               </CardContent>
@@ -197,6 +240,51 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+        <div
+className={`w-[30%] bg-white rounded-xl shadow-md border p-5 transition-all duration-300 ${
+showAI ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"
+}`}
+>
+  <h2 className="text-xl font-bold mb-3">AI Assistant</h2>
+
+<div className="flex flex-col gap-3 h-[400px]">
+
+<div className="flex-1 border rounded-md p-3 overflow-y-auto flex flex-col gap-2">
+
+{messages.length === 0 && (
+<p className="text-sm text-gray-500">
+Ask AI about complaints, categories, or priorities.
+</p>
+)}
+
+{messages.map((msg, i) => (
+<div
+key={i}
+className={msg.role === "user" ? "text-right" : "text-left"}
+>
+<div className="inline-block bg-gray-100 rounded-md px-3 py-1 text-sm">
+{msg.content}
+</div>
+</div>
+))}
+
+</div>
+<input
+type="text"
+value={input}
+onChange={(e) => setInput(e.target.value)}
+onKeyDown={(e) => {
+  if (e.key === "Enter") {
+    sendMessage();
+  }
+}}
+placeholder="Ask AI something..."
+className="border rounded-md p-2"
+/>
+
+</div>
+</div>
+</div>
       </main>
     </>
   );
