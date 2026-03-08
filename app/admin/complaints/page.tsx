@@ -1,5 +1,8 @@
 'use client';
 
+
+export const dynamic = "force-dynamic";
+
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -13,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { AlertCircle, Clock, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { IComplaint } from '@/lib/models/Complaint';
 
+
 export default function AdminComplaintsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,9 +24,16 @@ export default function AdminComplaintsPage() {
   
   const [complaints, setComplaints] = useState<IComplaint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get('status') || 'all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+
+  useEffect(() => {
+  const status = searchParams.get('status');
+  if (status) {
+    setStatusFilter(status);
+  }
+}, [searchParams]);
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'authority')) {
