@@ -9,12 +9,14 @@ export type ComplaintCategory =
   | 'Healthcare'
   | 'Sanitation'
   | 'Safety';
-
 export interface IComplaint extends Document {
   userId: mongoose.Types.ObjectId;
   title: string;
   description: string;
   location: string;
+  state: string;
+  district: string;
+  ward?: string;
   imageUrl?: string;
   category: ComplaintCategory;
   status: ComplaintStatus;
@@ -23,7 +25,6 @@ export interface IComplaint extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
-
 const complaintSchema = new Schema<IComplaint>(
   {
     userId: {
@@ -43,6 +44,18 @@ const complaintSchema = new Schema<IComplaint>(
       type: String,
       required: true,
     },
+
+    state: {
+  type: String,
+  required: true,
+},
+district: {
+  type: String,
+  required: true,
+},
+ward: {
+  type: String,
+},
     imageUrl: {
       type: String,
     },

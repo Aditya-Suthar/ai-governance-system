@@ -1,5 +1,5 @@
 'use client';
-
+import { Country, State, City } from "country-state-city";
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,12 +31,19 @@ export default function Page() {
   photo: undefined,
 });
 
+     
+      const [state, setState] = useState("");
+      const [district, setDistrict] = useState("");
+      const [ward, setWard] = useState("");
+
+      const states = State.getStatesOfCountry("IN");
 
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string>('');
+
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -76,34 +83,47 @@ export default function Page() {
     setSuccessMessage(false);
 
     // Validate required fields
-    if (!formData.title.trim()) {
-      setErrorMessage('Please enter a title');
-      return;
-    }
+if (!formData.title.trim()) {
+  setErrorMessage('Please enter a title');
+  return;
+}
 
-    if (!formData.description.trim()) {
-      setErrorMessage('Please enter a description');
-      return;
-    }
+if (!formData.description.trim()) {
+  setErrorMessage('Please enter a description');
+  return;
+}
 
-    if (!formData.category) {
-      setErrorMessage('Please select a category');
-      return;
-    }
+if (!formData.category) {
+  setErrorMessage('Please select a category');
+  return;
+}
 
-    if (!formData.location.trim()) {
-      setErrorMessage('Please enter a location');
-      return;
-    }
+if (!formData.location.trim()) {
+  setErrorMessage('Please enter a location');
+  return;
+}
+
+if (!state) {
+  setErrorMessage('Please select a state');
+  return;
+}
+
+if (!district) {
+  setErrorMessage('Please select a district');
+  return;
+}
 
     setIsLoading(true);
 
     try {
-      const submitData = {
+     const submitData = {
   title: formData.title,
   description: formData.description,
   category: formData.category,
   location: formData.location,
+  state: state,
+  district: district,
+  ward: ward
 };
 
       const response = await fetch('/api/complaints', {
@@ -260,6 +280,68 @@ export default function Page() {
                   className="border-slate-300 dark:border-slate-600"
                 />
               </div>
+
+              {/* State */}
+<div className="space-y-2">
+  <label className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
+    State *
+  </label>
+
+  <select
+    value={state}
+    onChange={(e) => {
+      setState(e.target.value);
+      setDistrict(""); // reset district when state changes
+    }}
+    className="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2"
+  >
+    <option value="">Select State</option>
+
+    {states.map((s) => (
+      <option key={s.isoCode} value={s.isoCode}>
+        {s.name}
+      </option>
+    ))}
+  </select>
+</div>
+
+
+
+{/* District */}
+<div className="space-y-2">
+  <label className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
+    District *
+  </label>
+
+  <select
+    value={district}
+    onChange={(e) => setDistrict(e.target.value)}
+    className="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2"
+  >
+    <option value="">Select District</option>
+
+    {state &&
+      City.getCitiesOfState("IN", state).map((city) => (
+        <option key={city.name} value={city.name}>
+          {city.name}
+        </option>
+      ))}
+  </select>
+</div>
+
+{/* Ward */}
+<div className="space-y-2">
+  <label className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
+    Ward / Area
+  </label>
+
+  <Input
+    type="text"
+    placeholder="Sector / Ward / Area"
+    value={ward}
+    onChange={(e) => setWard(e.target.value)}
+  />
+</div>
 
               {/* Photo Upload */}
               <div className="space-y-2">

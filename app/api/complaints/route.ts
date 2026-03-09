@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, description, location, category } = body
+    const { title, description, location, category, state, district, ward } = validation.data;
 
     // Connect to database
     await connectDB();
@@ -36,15 +36,17 @@ export async function POST(request: NextRequest) {
     const priority = assignPriority(title, description, category);
 
     // Create complaint
-    const complaint = new Complaint({
-      userId: user.userId,
-      title,
-      description,
-      location,
-      category,
-      priority,
-      status: 'Pending',
-    });
+    const complaint = await Complaint.create({
+          userId: user.userId,
+          title,
+          description,
+          location,
+          state,
+          district,
+          ward,
+          category,
+          priority
+        });
 
     await complaint.save();
 

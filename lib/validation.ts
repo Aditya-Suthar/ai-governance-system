@@ -44,6 +44,12 @@ export const complaintSchema = z.object({
 
   location: z.string().min(5, "Location is required"),
 
+  state: z.string().min(1, "State is required"),
+
+  district: z.string().min(1, "District is required"),
+
+  ward: z.string().optional(),
+
   category: z.enum([
     "Roads",
     "Water",
