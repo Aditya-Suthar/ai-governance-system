@@ -133,122 +133,162 @@ export default function DashboardPage() {
   return (
     <>
       <Navigation />
-      <main className="min-h-screen bg-slate-50 py-12 relative">
-       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-6 items-start">
-        <div className={`transition-all duration-300 ${showAI ? "w-[70%]" : "w-full"}`}>
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Complaints</h1>
-              <p className="text-gray-600 mt-2">Track and manage your submitted complaints</p>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => setShowAI(!showAI)}
-                variant="outline"
-              >
-                AI
-              </Button>
-
-              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
-                <Link href="/complaints/new">Report New Complaint</Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* Statistics */}
-          <div className="grid md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
-                <p className="text-gray-600 text-sm mt-2">Total Complaints</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
-                <p className="text-gray-600 text-sm mt-2">Pending</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold text-blue-600">{stats.inProgress}</div>
-                <p className="text-gray-600 text-sm mt-2">In Progress</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold text-green-600">{stats.resolved}</div>
-                <p className="text-gray-600 text-sm mt-2">Resolved</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Complaints List */}
-          {isLoading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600">Loading complaints...</p>
-            </div>
-          ) : complaints.length === 0 ? (
-            <Card>
-              <CardContent className="py-12">
-                <div className="text-center">
-                  <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Complaints Yet</h3>
-                  <p className="text-gray-600 mb-6">You haven&apos;t reported any complaints yet.</p>
-                  <Button asChild>
-                    <Link href="/complaints/new">Report Your First Complaint</Link>
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-8 items-start">
+          <div className={`transition-all duration-300 ${showAI ? "w-[70%]" : "w-full"}`}>
+            {/* Header Section */}
+            <div className="mb-10">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div>
+                  <h1 className="text-4xl font-bold text-gray-900">Project Zero Point</h1>
+                  <p className="text-gray-500 mt-2 text-lg">Track and manage your civic complaints</p>
+                </div>
+                <div className="flex gap-3 flex-wrap">
+                  <Button
+                    onClick={() => setShowAI(!showAI)}
+                    variant="outline"
+                    className="border-gray-300 hover:bg-gray-100"
+                  >
+                    {showAI ? "Hide AI" : "Show AI"} Assistant
+                  </Button>
+                  <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+                    <Link href="/complaints/new">+ Report New Complaint</Link>
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {complaints.map((complaint) => (
-                <Card key={complaint._id?.toString()} className="hover:shadow-md transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          {getStatusIcon(complaint.status)}
-                          <h3 className="text-lg font-semibold text-gray-900">{complaint.title}</h3>
-                        </div>
-                        <p className="text-gray-600 text-sm mb-3">{complaint.description}</p>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          <Badge className={getStatusColor(complaint.status)}>
-                            {complaint.status}
-                          </Badge>
-                          <Badge className={getPriorityColor(complaint.priority)}>
-                            {complaint.priority} Priority
-                          </Badge>
-                          <Badge variant="outline">
-                            {complaint.category}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          Submitted on {new Date(complaint.createdAt).toLocaleDateString()}
-                        </p>
+              </div>
+            </div>
+
+            {/* Statistics Section */}
+            <div className="mb-10">
+              <h2 className="text-sm font-semibold text-gray-700 mb-4 tracking-wide uppercase">Your Overview</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <p className="text-sm font-medium text-gray-600 mb-2">Total Complaints</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold text-gray-900">{stats.total}</span>
+                      <span className="text-xs text-gray-500">submitted</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <p className="text-sm font-medium text-yellow-700 mb-2">Pending</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold text-yellow-600">{stats.pending}</span>
+                      <span className="text-xs text-gray-500">awaiting</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <p className="text-sm font-medium text-blue-700 mb-2">In Progress</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold text-blue-600">{stats.inProgress}</span>
+                      <span className="text-xs text-gray-500">being worked on</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <p className="text-sm font-medium text-green-700 mb-2">Resolved</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold text-green-600">{stats.resolved}</span>
+                      <span className="text-xs text-gray-500">completed</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Complaints List Section */}
+            <div>
+              <h2 className="text-sm font-semibold text-gray-700 mb-4 tracking-wide uppercase">Recent Complaints</h2>
+              {isLoading ? (
+                <Card className="border-0 bg-white shadow-sm">
+                  <CardContent className="py-16">
+                    <div className="text-center">
+                      <div className="animate-pulse flex justify-center">
+                        <div className="h-8 bg-gray-200 rounded w-48"></div>
                       </div>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/complaint/${complaint._id}`}>
-                          View
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Link>
+                      <p className="text-gray-600 mt-4">Loading your complaints...</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : complaints.length === 0 ? (
+                <Card className="border-0 bg-white shadow-sm">
+                  <CardContent className="py-16">
+                    <div className="text-center">
+                      <AlertCircle className="w-14 h-14 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No Complaints Yet</h3>
+                      <p className="text-gray-600 mb-8">Start by reporting your first civic complaint to track and resolve issues.</p>
+                      <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                        <Link href="/complaints/new">Report Your First Complaint</Link>
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              ) : (
+                <div className="space-y-4">
+                  {complaints.map((complaint) => (
+                    <Card 
+                      key={complaint._id?.toString()} 
+                      className="border-0 bg-white shadow-sm hover:shadow-lg transition-all duration-200 hover:border-blue-200 cursor-pointer"
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between gap-6">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="shrink-0">
+                                {getStatusIcon(complaint.status)}
+                              </div>
+                              <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{complaint.title}</h3>
+                            </div>
+                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">{complaint.description}</p>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              <Badge className={`${getStatusColor(complaint.status)} border-0 font-medium`}>
+                                {complaint.status}
+                              </Badge>
+                              <Badge className={`${getPriorityColor(complaint.priority)} border-0 font-medium`}>
+                                {complaint.priority} Priority
+                              </Badge>
+                              <Badge variant="outline" className="border-gray-200 bg-gray-50">
+                                {complaint.category}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-gray-500 font-medium">
+                              {new Date(complaint.createdAt).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric', 
+                                year: 'numeric' 
+                              })}
+                            </p>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            asChild 
+                            className="shrink-0 hover:bg-blue-50 text-blue-600 hover:text-blue-700"
+                          >
+                            <Link href={`/complaints/${complaint._id}`} className="gap-2">
+                              View Details
+                              <ArrowRight className="w-4 h-4" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          {showAI && (
+            <div className="w-[30%] sticky top-8">
+              <AIBot />
             </div>
           )}
         </div>
-        {showAI && (
-  <div className="w-[30%]">
-    <AIBot />
-  </div>
-)}
-
-</div>
       </main>
     </>
   );
