@@ -70,7 +70,7 @@ export function Navigation() {
                   <Link href="/dashboard">Dashboard</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/complaint/new">Report Complaint</Link>
+                  <Link href="/complaints/new">Report Complaint</Link>
                 </Button>
               </>
             ) : (
@@ -115,7 +115,7 @@ export function Navigation() {
                       <Link href="/dashboard">Dashboard</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/complaint/new">Report Complaint</Link>
+                      <Link href="/complaints/new">Report Complaint</Link>
                     </DropdownMenuItem>
                   </>
                 ) : (

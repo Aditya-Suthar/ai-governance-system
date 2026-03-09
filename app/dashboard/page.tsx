@@ -5,6 +5,8 @@ type Message = {
   content: string;
 };
 
+
+import AIBot from "@/components/AIBot";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -240,50 +242,12 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-        <div
-className={`w-[30%] bg-white rounded-xl shadow-md border p-5 transition-all duration-300 ${
-showAI ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"
-}`}
->
-  <h2 className="text-xl font-bold mb-3">AI Assistant</h2>
-
-<div className="flex flex-col gap-3 h-[400px]">
-
-<div className="flex-1 border rounded-md p-3 overflow-y-auto flex flex-col gap-2">
-
-{messages.length === 0 && (
-<p className="text-sm text-gray-500">
-Ask AI about complaints, categories, or priorities.
-</p>
+        {showAI && (
+  <div className="w-[30%]">
+    <AIBot />
+  </div>
 )}
 
-{messages.map((msg, i) => (
-<div
-key={i}
-className={msg.role === "user" ? "text-right" : "text-left"}
->
-<div className="inline-block bg-gray-100 rounded-md px-3 py-1 text-sm">
-{msg.content}
-</div>
-</div>
-))}
-
-</div>
-<input
-type="text"
-value={input}
-onChange={(e) => setInput(e.target.value)}
-onKeyDown={(e) => {
-  if (e.key === "Enter") {
-    sendMessage();
-  }
-}}
-placeholder="Ask AI something..."
-className="border rounded-md p-2"
-/>
-
-</div>
-</div>
 </div>
       </main>
     </>

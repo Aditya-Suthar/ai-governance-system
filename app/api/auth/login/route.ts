@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    if (!verifyPassword(password, user.password)) {
+    if (!(await verifyPassword(password, user.password))) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }

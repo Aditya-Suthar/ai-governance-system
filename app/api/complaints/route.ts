@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, description, location, category } = validation.data;
+    const { title, description, location, category } = body
 
     // Connect to database
     await connectDB();
