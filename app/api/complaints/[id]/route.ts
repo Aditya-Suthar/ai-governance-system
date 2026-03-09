@@ -131,11 +131,15 @@ export async function PATCH(
     // Connect to database
     await connectDB()
 
-    const complaint = await Complaint.findByIdAndUpdate(
+   const complaint = await Complaint.findByIdAndUpdate(
   cleanId,
-      { status: validation.data.status },
-      { new: true }
-    )
+  {
+    status: validation.data.status,
+    priority: validation.data.priority,
+    category: validation.data.category,
+  },
+  { new: true }
+)
 
     if (!complaint) {
       return NextResponse.json(

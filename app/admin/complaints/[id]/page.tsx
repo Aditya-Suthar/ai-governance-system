@@ -117,7 +117,7 @@ export default function ComplaintManagement() {
  async function updateComplaint() {
   try {
     await fetch("/api/complaints/" + complaintId, {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
@@ -125,6 +125,7 @@ export default function ComplaintManagement() {
     })
 
     alert("Complaint updated successfully")
+    window.location.reload()
   } catch (error) {
     console.error("Update failed", error)
   }

@@ -59,7 +59,18 @@ export const complaintSchema = z.object({
 ========================= */
 
 export const updateComplaintStatusSchema = z.object({
-  status: z.enum(["Pending", "In Progress", "Resolved"]),
+  status: z.enum(['Pending', 'In Progress', 'Resolved']),
+
+  priority: z.enum(['Low', 'Medium', 'High', 'Critical']).optional(),
+
+  category: z.enum([
+    'Roads',
+    'Water',
+    'Electricity',
+    'Healthcare',
+    'Sanitation',
+    'Safety'
+  ]).optional()
 })
 
 /* =========================
