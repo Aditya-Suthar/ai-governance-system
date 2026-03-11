@@ -202,19 +202,27 @@ export default function ComplaintManagement() {
             <div className="bg-muted/50 p-4 rounded-lg border border-border space-y-3">
               <p className="text-sm font-medium text-muted-foreground">Reported By</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-xs text-muted-foreground">Name</p>
-                  <p className="text-foreground font-medium">{complaint.citizenName}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Phone</p>
-                  <p className="text-foreground">{complaint.citizenPhone}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Email</p>
-                  <p className="text-foreground">{complaint.citizenEmail}</p>
-                </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Name</p>
+                <p className="text-foreground font-medium">
+                  {complaint.userId?.name}
+                </p>
               </div>
+
+              <div>
+                <p className="text-xs text-muted-foreground">Phone</p>
+                <p className="text-foreground">
+                  {complaint.userId?.phone}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs text-muted-foreground">Email</p>
+                <p className="text-foreground">
+                  {complaint.userId?.email}
+                </p>
+              </div>
+            </div>
             </div>
           </CardContent>
         </Card>
@@ -342,9 +350,11 @@ export default function ComplaintManagement() {
                   <span className="font-medium text-foreground">
   {aiResult?.category || "Analyzing..."}
 </span>
-                  <Badge variant="secondary" className="bg-blue-500/10 text-blue-700">
-                    92% match
-                  </Badge>
+                      {aiResult?.categoryConfidence && (
+                      <Badge variant="secondary" className="bg-blue-500/10 text-blue-700">
+                        {aiResult.categoryConfidence}% match
+                      </Badge>
+                    )}
                 </div>
               </div>
 
@@ -352,36 +362,50 @@ export default function ComplaintManagement() {
               <div className="bg-muted/50 p-4 rounded-lg border border-border space-y-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase">Suggested Priority</p>
                 <div className="flex items-center justify-between">
-<span className="font-medium">
-  {aiResult?.priority || "Analyzing..."}
-</span>                  <Badge variant="secondary" className="bg-blue-500/10 text-blue-700">
-                    88% confidence
+            <span className="font-medium">
+              {aiResult?.priority || "Analyzing..."}
+            </span>        
+          {aiResult?.priorityConfidence && (
+                  <Badge variant="secondary" className="bg-blue-500/10 text-blue-700">
+                    {aiResult.priorityConfidence}% confidence
                   </Badge>
+                )}
                 </div>
               </div>
 
-              {/* Spam Detection */}
-              <div className="bg-green-500/10 p-4 rounded-lg border border-green-200 space-y-2">
-                <p className="text-xs font-medium text-green-700 uppercase">Spam Detection</p>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-600" />
-                  <span className="text-sm text-green-700 font-medium">Legitimate complaint</span>
-                </div>
-                <p className="text-xs text-green-600">Low spam probability (4%)</p>
-              </div>
+                            {aiResult?.spamProbability !== undefined && (
+                <div className="bg-green-500/10 p-4 rounded-lg border border-green-200 space-y-2">
+                  <p className="text-xs font-medium uppercase">Spam Detection</p>
 
-              {/* Related Complaints */}
-              <div className="bg-muted/50 p-4 rounded-lg border border-border space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase">Related Complaints</p>
-                <div className="space-y-2">
-                  <div className="text-sm text-foreground hover:text-primary cursor-pointer">
-                    • Pothole near intersection (3 days ago)
+                  <div className="flex items-center gap-2">
+                    {aiResult.spamProbability > 50 ? (
+                      <AlertTriangle className="w-4 h-4 text-red-600" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    )}
+
+                    <span className="text-sm font-medium">
+                      {aiResult.spamProbability > 50 ? "Likely Spam" : "Legitimate Complaint"}
+                    </span>
                   </div>
-                  <div className="text-sm text-foreground hover:text-primary cursor-pointer">
-                    • Road surface damage Main St (1 week ago)
-                  </div>
+
+                  <p className="text-xs">
+                    Spam probability: {aiResult.spamProbability}%
+                  </p>
                 </div>
-              </div>
+              )}
+
+              {aiResult?.relatedComplaints?.length > 0 && (
+            <div className="bg-muted/50 p-4 rounded-lg border border-border space-y-2">
+              <p className="text-xs font-medium uppercase">Related Complaints</p>
+
+              {aiResult.relatedComplaints.map((item: any, i: number) => (
+                <div key={i} className="text-sm">
+                  • {item}
+                </div>
+              ))}
+            </div>
+          )}
             </CardContent>
           </Card>
         </div>

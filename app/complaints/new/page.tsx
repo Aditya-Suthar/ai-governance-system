@@ -1,4 +1,5 @@
 'use client';
+import LocationPicker from "@/components/LocationPicker";
 import { Country, State, City } from "country-state-city";
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +24,7 @@ interface FormData {
 }
 
 export default function Page() {
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [formData, setFormData] = useState<FormData>({
   title: '',
   description: '',
@@ -280,7 +282,13 @@ if (!district) {
                   className="border-slate-300 dark:border-slate-600"
                 />
               </div>
+              <div className="mt-4">
+  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
+    Pin Location on Map
+  </p>
 
+  <LocationPicker setLocation={setLocation} />
+</div>
               {/* State */}
 <div className="space-y-2">
   <label className="block text-sm font-semibold text-slate-900 dark:text-slate-100">

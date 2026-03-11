@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/db";
+import { Complaint } from "@/lib/models/Complaint";
 
 export async function POST(req: Request) {
   const { title, description } = await req.json();
@@ -19,7 +21,10 @@ Description: ${description}
 JSON format:
 {
   "category": "Roads | Water | Electricity | Healthcare | Sanitation | Safety",
-  "priority": "Low | Medium | High | Critical"
+  "categoryConfidence": number,
+  "priority": "Low | Medium | High | Critical",
+  "priorityConfidence": number,
+  "spamProbability": number
 }
 `,
       stream: false,
@@ -33,10 +38,47 @@ JSON format:
   const match = text.match(/\{[\s\S]*\}/);
 
   if (!match) {
-    return NextResponse.json({ result: { category: "Unknown", priority: "Low" } });
+  return NextResponse.json({
+    result: {
+      category: "Unknown",
+      categoryConfidence: 0,
+      priority: "Low",
+      priorityConfidence: 0,
+      spamProbability: 0,
+      relatedComplaints: []
+    }
+  });
+}
+  let parsed;
+
+try {
+  parsed = JSON.parse(match[0]);
+} catch {
+  parsed = {
+    category: "Unknown",
+    categoryConfidence: 0,
+    priority: "Low",
+    priorityConfidence: 0,
+    spamProbability: 0,
+  };
+}
+
+await connectDB();
+
+// find related complaints using category
+const related = await Complaint.find({
+  category: parsed.category
+})
+.sort({ createdAt: -1 })
+.limit(2)
+.select("title");
+
+const relatedComplaints = related.map((c) => c.title);
+
+return NextResponse.json({
+  result: {
+    ...parsed,
+    relatedComplaints
   }
-
-  const parsed = JSON.parse(match[0]);
-
-  return NextResponse.json({ result: parsed });
+});
 }

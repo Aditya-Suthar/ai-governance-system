@@ -33,9 +33,11 @@ interface Complaint {
     priority: 'Low' | 'Medium' | 'High' | 'Critical'
   location: string
   createdAt: string
-  citizenName: string
-  citizenPhone: string
-  citizenEmail: string
+  userId: {
+  name: string
+  phone: string
+  email: string
+}
   images?: string[]
   adminNotes?: string
   lastUpdate?: string
@@ -306,14 +308,14 @@ export default function ComplaintDetailsPage() {
                     <User className="h-4 w-4 text-slate-600" />
                     <p className="text-sm text-slate-600">Name</p>
                   </div>
-                  <p className="font-semibold text-slate-900">{complaint.citizenName}</p>
+                  <p className="font-semibold text-slate-900">{complaint.userId?.name}</p>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Phone className="h-4 w-4 text-slate-600" />
                     <p className="text-sm text-slate-600">Phone</p>
                   </div>
-                  <p className="font-semibold text-slate-900">{complaint.citizenPhone}</p>
+                  <p className="font-semibold text-slate-900">{complaint.userId?.phone}</p>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -321,7 +323,7 @@ export default function ComplaintDetailsPage() {
                     <p className="text-sm text-slate-600">Email</p>
                   </div>
                   <p className="font-semibold text-slate-900 break-all">
-                    {complaint.citizenEmail}
+                    {complaint.userId?.email}
                   </p>
                 </div>
               </CardContent>

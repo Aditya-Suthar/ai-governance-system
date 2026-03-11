@@ -24,6 +24,8 @@ export interface IComplaint extends Document {
   assignedToId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
+  latitude?: number;
+  longitude?: number;
 }
 const complaintSchema = new Schema<IComplaint>(
   {

@@ -5,7 +5,7 @@ type Message = {
   content: string;
 };
 
-
+import DashboardComplaintMap from '@/components/maps/DashboardComplaintMap'
 import AIBot from "@/components/AIBot";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -200,6 +200,9 @@ export default function DashboardPage() {
                 </Card>
               </div>
             </div>
+
+            {/* Complaint Map */}
+            <DashboardComplaintMap complaints={complaints as any} />
 
             {/* Complaints List Section */}
             <div>
