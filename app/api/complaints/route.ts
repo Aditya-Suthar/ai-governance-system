@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import geocoder from "@/lib/geocoder";
 import { connectDB } from '@/lib/db';
 import { Complaint } from '@/lib/models/Complaint';
 import { getAuthUser } from '@/lib/auth';
@@ -34,9 +35,23 @@ export async function POST(request: NextRequest) {
 
     // Assign priority based on AI logic
     const priority = assignPriority(title, description, category);
+    // Convert location to coordinates
+let latitude = null;
+let longitude = null;
+
+try {
+  const geo = await geocoder.geocode(`${ward}, ${district}, ${state}, India`);
+
+  if (geo.length > 0) {
+    latitude = geo[0].latitude || null;
+    longitude = geo[0].longitude || null;
+  }
+} catch (err) {
+  console.error("Geocoding failed:", err);
+}
 
     // Create complaint
-    const complaint = await Complaint.create({
+            const complaint = await Complaint.create({
           userId: user.userId,
           title,
           description,
@@ -45,10 +60,10 @@ export async function POST(request: NextRequest) {
           district,
           ward,
           category,
-          priority
+          priority,
+          latitude,
+          longitude
         });
-
-    await complaint.save();
 
     return NextResponse.json(
       {

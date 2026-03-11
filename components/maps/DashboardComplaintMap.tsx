@@ -3,6 +3,19 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
+import L from "leaflet"
+
+delete (L.Icon.Default.prototype as any)._getIconUrl
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+})
+
 interface Complaint {
   _id: string
   title: string
@@ -28,18 +41,18 @@ export default function DashboardComplaintMap({ complaints }: Props) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {complaints.map((complaint) => {
-  const lat = complaint.latitude ?? 29.9695
-  const lng = complaint.longitude ?? 76.8783
-
-  return (
-    <Marker key={complaint._id} position={[lat, lng]}>
+        {complaints
+  .filter((c) => c.latitude && c.longitude)
+  .map((complaint) => (
+    <Marker
+      key={complaint._id}
+      position={[complaint.latitude, complaint.longitude]}
+    >
       <Popup>
         <b>{complaint.title}</b>
       </Popup>
     </Marker>
-  )
-})}
+  ))}
       </MapContainer>
     </div>
   )
