@@ -1,5 +1,8 @@
 'use client';
-import LocationPicker from "@/components/LocationPicker";
+import dynamic from "next/dynamic";
+const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
+  ssr: false,
+});
 import { Country, State, City } from "country-state-city";
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
