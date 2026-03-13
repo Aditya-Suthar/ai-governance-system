@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import "leaflet/dist/leaflet.css";
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/lib/context/AuthContext'

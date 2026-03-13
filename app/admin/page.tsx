@@ -1,7 +1,12 @@
 'use client';
 
+type Message = {
+  role: "user" | "ai";
+  content: string;
+};
 
-
+import DashboardComplaintMap from '@/components/maps/DashboardComplaintMap'
+import AIBot from "@/components/AIBot";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -9,202 +14,286 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { Navigation } from '@/components/shared/Navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { AlertCircle, Clock, CheckCircle, ArrowRight } from 'lucide-react';
+import { IComplaint } from '@/lib/models/Complaint';
 
-interface Stats {
-  total: number;
-  pending: number;
-  inProgress: number;
-  resolved: number;
-}
 
-const COLORS = ['#eab308', '#3b82f6', '#10b981'];
-
-export default function AdminDashboardPage() {
+export default function DashboardPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
-  const [stats, setStats] = useState<Stats>({ total: 0, pending: 0, inProgress: 0, resolved: 0 });
+  const [complaints, setComplaints] = useState<IComplaint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAI, setShowAI] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);  
+  const [input, setInput] = useState("");
+
+  const sendMessage = async () => {
+  if (!input.trim()) return;
+  
+  const userMessage: Message = { role: "user", content: input };
+  setMessages(prev => [...prev, userMessage]);
+
+  const response = await fetch("/api/ai", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message: input })
+  });
+
+  const data = await response.json();
+
+  const aiMessage: Message = {
+  role: "ai",
+  content: data.reply
+};
+
+  setMessages(prev => [...prev, aiMessage]);
+  setInput("");
+};
 
   useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'authority')) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
+  if (!authLoading && user?.role === "authority") {
+    router.push("/admin");
+  }
+}, [user, authLoading, router]);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchComplaints = async () => {
       try {
-        const response = await fetch('/api/admin/complaints');
+        const response = await fetch('/api/complaints');
         if (response.ok) {
           const data = await response.json();
-          setStats(data.stats);
+          setComplaints(data.complaints);
         }
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
+        console.error('Failed to fetch complaints:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (user) {
-      fetchStats();
-    }
+    if (user && user.role === "citizen") {
+        fetchComplaints();
+      }
   }, [user]);
 
-  const chartData = [
-    { name: 'Pending', value: stats.pending },
-    { name: 'In Progress', value: stats.inProgress },
-    { name: 'Resolved', value: stats.resolved },
-  ];
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'Pending':
+        return <AlertCircle className="w-5 h-5 text-yellow-600" />;
+      case 'In Progress':
+        return <Clock className="w-5 h-5 text-blue-600" />;
+      case 'Resolved':
+        return <CheckCircle className="w-5 h-5 text-green-600" />;
+      default:
+        return null;
+    }
+  };
 
-  const pieData = [
-    { name: 'Pending', value: stats.pending, fill: '#eab308' },
-    { name: 'In Progress', value: stats.inProgress, fill: '#3b82f6' },
-    { name: 'Resolved', value: stats.resolved, fill: '#10b981' },
-  ];
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'In Progress':
+        return 'bg-blue-100 text-blue-800';
+      case 'Resolved':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
-  if (authLoading || !user) {
-    return <div className="min-h-screen bg-slate-50" />;
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'Critical':
+        return 'bg-red-100 text-red-800';
+      case 'High':
+        return 'bg-orange-100 text-orange-800';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (authLoading) {
+  return <div className="min-h-screen bg-slate-50">Loading...</div>;
   }
+
+  const stats = {
+    total: complaints.length,
+    pending: complaints.filter(c => c.status === 'Pending').length,
+    inProgress: complaints.filter(c => c.status === 'In Progress').length,
+    resolved: complaints.filter(c => c.status === 'Resolved').length,
+  };
 
   return (
     <>
       <Navigation />
-      <main className="min-h-screen bg-slate-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-600 mt-2">Overview of all complaints and their status</p>
-            </div>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/admin/complaints">View All Complaints</Link>
-            </Button>
-          </div>
-
-          {/* Statistics Cards */}
-          <div className="grid md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
-                <p className="text-gray-600 text-sm mt-2">Total Complaints</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
-                <p className="text-gray-600 text-sm mt-2">Pending</p>
-                <p className="text-xs text-gray-500 mt-2">
-                  {stats.total > 0 ? ((stats.pending / stats.total) * 100).toFixed(0) : 0}% of total
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold text-blue-600">{stats.inProgress}</div>
-                <p className="text-gray-600 text-sm mt-2">In Progress</p>
-                <p className="text-xs text-gray-500 mt-2">
-                  {stats.total > 0 ? ((stats.inProgress / stats.total) * 100).toFixed(0) : 0}% of total
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold text-green-600">{stats.resolved}</div>
-                <p className="text-gray-600 text-sm mt-2">Resolved</p>
-                <p className="text-xs text-gray-500 mt-2">
-                  {stats.total > 0 ? ((stats.resolved / stats.total) * 100).toFixed(0) : 0}% of total
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Charts */}
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Bar Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Complaints by Status</CardTitle>
-                <CardDescription>Distribution of complaints across different statuses</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="#3b82f6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {/* Pie Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Status Distribution</CardTitle>
-                <CardDescription>Percentage breakdown of complaint statuses</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Actions */}
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common tasks for managing complaints</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-3 gap-4">
-                <Button asChild variant="outline" className="justify-start h-auto flex-col items-start p-4">
-                  <Link href="/admin/complaints?status=Pending">
-                    <span className="font-semibold">View Pending</span>
-                    <span className="text-sm text-gray-600">{stats.pending} complaints waiting for action</span>
-                    <ArrowRight className="w-4 h-4 mt-2 ml-auto" />
-                  </Link>
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-8 items-start">
+          <div className={`transition-all duration-300 ${showAI ? "w-[70%]" : "w-full"}`}>
+            {/* Header Section */}
+            <div className="mb-10">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div>
+                  <h1 className="text-4xl font-bold text-gray-900">Project Zero Point</h1>
+                  <p className="text-gray-500 mt-2 text-lg">Track and manage your civic complaints</p>
+                </div>
+                <div className="flex gap-3 flex-wrap">
+                  <Button
+                    onClick={() => setShowAI(!showAI)}
+                    variant="outline"
+                    className="border-gray-300 hover:bg-gray-100"
+                  >
+                    {showAI ? "Hide AI" : "Show AI"} Assistant
+                  </Button>
+                  {user?.role === "citizen" && (
+                <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+                  <Link href="/complaints/new">+ Report New Complaint</Link>
                 </Button>
-                <Button asChild variant="outline" className="justify-start h-auto flex-col items-start p-4">
-                  <Link href="/admin/complaints?status=In Progress">
-                    <span className="font-semibold">View In Progress</span>
-                    <span className="text-sm text-gray-600">{stats.inProgress} complaints being worked on</span>
-                    <ArrowRight className="w-4 h-4 mt-2 ml-auto" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="justify-start h-auto flex-col items-start p-4">
-                  <Link href="/admin/complaints?status=Resolved">
-                    <span className="font-semibold">View Resolved</span>
-                    <span className="text-sm text-gray-600">{stats.resolved} complaints completed</span>
-                    <ArrowRight className="w-4 h-4 mt-2 ml-auto" />
-                  </Link>
-                </Button>
+              )}
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+
+            {/* Statistics Section */}
+            <div className="mb-10">
+              <h2 className="text-sm font-semibold text-gray-700 mb-4 tracking-wide uppercase">Your Overview</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <p className="text-sm font-medium text-gray-600 mb-2">Total Complaints</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold text-gray-900">{stats.total}</span>
+                      <span className="text-xs text-gray-500">submitted</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <p className="text-sm font-medium text-yellow-700 mb-2">Pending</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold text-yellow-600">{stats.pending}</span>
+                      <span className="text-xs text-gray-500">awaiting</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <p className="text-sm font-medium text-blue-700 mb-2">In Progress</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold text-blue-600">{stats.inProgress}</span>
+                      <span className="text-xs text-gray-500">being worked on</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <p className="text-sm font-medium text-green-700 mb-2">Resolved</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold text-green-600">{stats.resolved}</span>
+                      <span className="text-xs text-gray-500">completed</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Complaint Map */}
+            <DashboardComplaintMap complaints={complaints as any} />
+
+            {/* Complaints List Section */}
+            <div>
+              <h2 className="text-sm font-semibold text-gray-700 mb-4 tracking-wide uppercase">Recent Complaints</h2>
+              {isLoading ? (
+                <Card className="border-0 bg-white shadow-sm">
+                  <CardContent className="py-16">
+                    <div className="text-center">
+                      <div className="animate-pulse flex justify-center">
+                        <div className="h-8 bg-gray-200 rounded w-48"></div>
+                      </div>
+                      <p className="text-gray-600 mt-4">Loading your complaints...</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : complaints.length === 0 ? (
+                <Card className="border-0 bg-white shadow-sm">
+                  <CardContent className="py-16">
+                    <div className="text-center">
+                      <AlertCircle className="w-14 h-14 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No Complaints Yet</h3>
+                      <p className="text-gray-600 mb-8">Start by reporting your first civic complaint to track and resolve issues.</p>
+                      <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                        <Link href="/complaints/new">Report Your First Complaint</Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {complaints.map((complaint) => (
+                    <Card 
+                      key={complaint._id?.toString()} 
+                      className="border-0 bg-white shadow-sm hover:shadow-lg transition-all duration-200 hover:border-blue-200 cursor-pointer"
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between gap-6">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="shrink-0">
+                                {getStatusIcon(complaint.status)}
+                              </div>
+                              <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{complaint.title}</h3>
+                            </div>
+                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">{complaint.description}</p>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              <Badge className={`${getStatusColor(complaint.status)} border-0 font-medium`}>
+                                {complaint.status}
+                              </Badge>
+                              <Badge className={`${getPriorityColor(complaint.priority)} border-0 font-medium`}>
+                                {complaint.priority} Priority
+                              </Badge>
+                              <Badge variant="outline" className="border-gray-200 bg-gray-50">
+                                {complaint.category}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-gray-500 font-medium">
+                              {new Date(complaint.createdAt).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric', 
+                                year: 'numeric' 
+                              })}
+                            </p>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            asChild 
+                            className="shrink-0 hover:bg-blue-50 text-blue-600 hover:text-blue-700"
+                          >
+                            <Link href={`/complaints/${complaint._id}`} className="gap-2">
+                              View Details
+                              <ArrowRight className="w-4 h-4" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          {showAI && (
+            <div className="w-[30%] sticky top-8">
+              <AIBot />
+            </div>
+          )}
         </div>
       </main>
     </>

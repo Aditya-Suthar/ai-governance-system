@@ -19,10 +19,9 @@ export default function HomePage() {
   }
 }, [isLoading, user, router]);
 
-if (isLoading) {
-  return <div className="p-10">Loading...</div>;
+if (user?.role === "authority") {
+  return null;
 }
-
   return (
     <>
       <Navigation />

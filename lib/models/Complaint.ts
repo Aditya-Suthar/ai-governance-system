@@ -58,6 +58,14 @@ district: {
 ward: {
   type: String,
 },
+
+    latitude: {
+  type: Number,
+},
+
+longitude: {
+  type: Number,
+},
     imageUrl: {
       type: String,
     },

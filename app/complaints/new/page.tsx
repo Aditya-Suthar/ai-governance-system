@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -25,6 +26,7 @@ interface FormData {
 
 export default function Page() {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
   title: '',
   description: '',
@@ -123,9 +125,11 @@ if (!district) {
   description: formData.description,
   category: formData.category,
   location: formData.location,
-  state: state,
-  district: district,
-  ward: ward
+  state,
+  district,
+  ward,
+  latitude: location?.lat,
+  longitude: location?.lng
 };
 
       const response = await fetch('/api/complaints', {
@@ -142,6 +146,11 @@ if (!district) {
       }
 
       setSuccessMessage(true);
+
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1200);
+
       setFormData({
   title: '',
   description: '',

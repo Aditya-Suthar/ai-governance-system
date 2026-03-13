@@ -54,9 +54,10 @@ export default function DashboardPage() {
 };
 
   useEffect(() => {
-  console.log("USER:", user);
-  console.log("AUTH LOADING:", authLoading);
-}, [user, authLoading]);
+  if (!authLoading && user?.role === "authority") {
+    router.push("/admin");
+  }
+}, [user, authLoading, router]);
 
   useEffect(() => {
     const fetchComplaints = async () => {
@@ -73,9 +74,9 @@ export default function DashboardPage() {
       }
     };
 
-    if (user) {
-      fetchComplaints();
-    }
+    if (user && user.role === "citizen") {
+        fetchComplaints();
+      }
   }, [user]);
 
   const getStatusIcon = (status: string) => {
@@ -151,9 +152,11 @@ export default function DashboardPage() {
                   >
                     {showAI ? "Hide AI" : "Show AI"} Assistant
                   </Button>
-                  <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
-                    <Link href="/complaints/new">+ Report New Complaint</Link>
-                  </Button>
+                  {user?.role === "citizen" && (
+                <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+                  <Link href="/complaints/new">+ Report New Complaint</Link>
+                </Button>
+              )}
                 </div>
               </div>
             </div>
