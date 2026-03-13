@@ -3,7 +3,7 @@
 
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/context/AuthContext';
 import { Navigation } from '@/components/shared/Navigation';
@@ -27,20 +27,12 @@ interface Complaint {
 
 export default function AdminComplaintsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, isLoading: authLoading } = useAuth();
   
 const [complaints, setComplaints] = useState<Complaint[]>([]);  const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-
-  useEffect(() => {
-  const status = searchParams.get('status');
-  if (status) {
-    setStatusFilter(status);
-  }
-}, [searchParams]);
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'authority')) {
