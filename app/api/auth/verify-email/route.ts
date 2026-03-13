@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
     }
 
     user.emailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationTokenExpires = undefined;
+    user.emailVerificationToken = null;
+user.emailVerificationTokenExpires = null;
     await user.save();
 
     const jwt = generateToken({

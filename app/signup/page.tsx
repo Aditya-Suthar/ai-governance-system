@@ -43,8 +43,7 @@ export default function SignupPage() {
         formData.phone || undefined
       );
       
-      toast.success('Account created successfully!');
-      router.push(role === 'citizen' ? '/dashboard' : '/admin');
+      toast.success('Account created! Please verify your email before logging in.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Signup failed');
     } finally {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { resend } from "@/lib/resend";
 import crypto from "crypto"
 import { connectDB } from "@/lib/db"
 import { User } from "@/lib/models/User"
@@ -61,19 +62,11 @@ export async function POST(request: NextRequest) {
 
     // Send verification email (logs link in dev)
     await sendVerificationEmail(user)
-
-    // Generate JWT token
-    const token = generateToken({
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role,
-    })
-
     // Create response
-    const response = NextResponse.json(
-      {
-        message: "User created successfully",
-        user: {
+    return NextResponse.json(
+{
+        message: "Account created. Please verify your email before logging in.",
+              user: {
           id: user._id,
           name: user.name,
           email: user.email,
@@ -83,16 +76,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
 
-    // Attach authentication cookie to response
-    response.cookies.set("auth-token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: "/",
-    })
-
-    return response
   } catch (error) {
     console.error("Signup error:", error)
 
