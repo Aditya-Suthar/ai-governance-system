@@ -5,7 +5,12 @@ type Message = {
   content: string;
 };
 
-import DashboardComplaintMap from '@/components/maps/DashboardComplaintMap'
+import dynamic from "next/dynamic"
+
+const DashboardComplaintMap = dynamic(
+  () => import("@/components/maps/DashboardComplaintMap"),
+  { ssr: false }
+)
 import AIBot from "@/components/AIBot";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
