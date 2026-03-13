@@ -40,8 +40,10 @@ let latitude = null;
 let longitude = null;
 
 try {
-  const geo = await geocoder.geocode(`${ward}, ${district}, ${state}, India`);
-
+const geo = await geocoder.geocode({
+  address: `${ward}, ${district}, ${state}, India`,
+});
+console.log("GEOCODER RESULT:", geo);
   if (geo.length > 0) {
     latitude = geo[0].latitude || null;
     longitude = geo[0].longitude || null;
@@ -102,8 +104,13 @@ export async function GET(request: NextRequest) {
     // Connect to database
     await connectDB();
 
-    const complaints = await Complaint.find({ userId: user.userId })
-      .sort({ createdAt: -1 });
+    let complaints;
+
+if (user.role === "authority") {
+  complaints = await Complaint.find().sort({ createdAt: -1 });
+} else {
+  complaints = await Complaint.find({ userId: user.userId }).sort({ createdAt: -1 });
+}
 
     return NextResponse.json(
       { complaints },

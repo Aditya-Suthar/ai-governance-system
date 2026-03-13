@@ -42,7 +42,11 @@ export default function DashboardComplaintMap({ complaints }: Props) {
         />
 
         {complaints
-  .filter((c) => c.latitude !== undefined && c.longitude !== undefined)
+  .filter(
+    (c) =>
+      typeof c.latitude === "number" &&
+      typeof c.longitude === "number"
+  )
   .map((complaint) => (
     <Marker
       key={complaint._id}

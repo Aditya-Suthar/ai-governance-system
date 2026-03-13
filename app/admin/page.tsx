@@ -58,8 +58,8 @@ export default function DashboardPage() {
 };
 
   useEffect(() => {
-  if (!authLoading && user?.role === "authority") {
-    router.push("/admin");
+  if (!authLoading && user?.role !== "authority") {
+    router.push("/dashboard");
   }
 }, [user, authLoading, router]);
 
@@ -78,9 +78,9 @@ export default function DashboardPage() {
       }
     };
 
-    if (user && user.role === "citizen") {
-        fetchComplaints();
-      }
+    if (user && user.role === "authority") {
+  fetchComplaints();
+}
   }, [user]);
 
   const getStatusIcon = (status: string) => {
