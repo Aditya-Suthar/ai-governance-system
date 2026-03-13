@@ -1,7 +1,6 @@
 'use client';
 
 
-export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -14,16 +13,24 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { AlertCircle, Clock, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
-import { IComplaint } from '@/lib/models/Complaint';
 
+interface Complaint {
+  _id: string
+  title: string
+  description: string
+  location: string
+  category: string
+  status: string
+  priority: string
+  userId?: string
+}
 
 export default function AdminComplaintsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading: authLoading } = useAuth();
   
-  const [complaints, setComplaints] = useState<IComplaint[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+const [complaints, setComplaints] = useState<Complaint[]>([]);  const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -223,7 +230,7 @@ export default function AdminComplaintsPage() {
           ) : (
             <div className="space-y-4">
               {complaints.map((complaint) => (
-                <Card key={complaint._id?.toString()} className="hover:shadow-md transition-shadow">
+                <Card key={complaint._id}className="hover:shadow-md transition-shadow">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
