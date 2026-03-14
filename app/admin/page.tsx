@@ -280,7 +280,7 @@ export default function DashboardPage() {
                             asChild 
                             className="shrink-0 hover:bg-blue-50 text-blue-600 hover:text-blue-700"
                           >
-                            <Link href={`/complaints/${complaint._id}`} className="gap-2">
+                            <Link href={`/admin/complaints/${complaint._id}`} className="gap-2">
                               View Details
                               <ArrowRight className="w-4 h-4" />
                             </Link>
