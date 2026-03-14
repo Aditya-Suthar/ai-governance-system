@@ -120,6 +120,11 @@ if (!district) {
   return;
 }
 
+if (!location) {
+  setErrorMessage('Please pin the location on the map');
+  return;
+}
+
     setIsLoading(true);
 
     try {

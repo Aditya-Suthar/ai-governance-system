@@ -40,10 +40,7 @@ let latitude = null;
 let longitude = null;
 
 try {
-const geo = await geocoder.geocode({
-  address: `${ward}, ${district}, ${state}, India`,
-});
-console.log("GEOCODER RESULT:", geo);
+const geo = await geocoder.geocode(`${district}, ${state}, India`);console.log("GEOCODER RESULT:", geo);
   if (geo.length > 0) {
     latitude = geo[0].latitude || null;
     longitude = geo[0].longitude || null;
