@@ -70,7 +70,8 @@ export default function DashboardPage() {
         const response = await fetch('/api/complaints');
         if (response.ok) {
           const data = await response.json();
-          setComplaints(data.complaints);
+console.log("Complaints received from API:", data.complaints.length);
+setComplaints(data.complaints);
         }
       } catch (error) {
         console.error('Failed to fetch complaints:', error);

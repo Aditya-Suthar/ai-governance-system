@@ -1,8 +1,12 @@
 'use client'
 
+
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
+import 'react-leaflet-cluster/dist/assets/MarkerCluster.css'
+import 'react-leaflet-cluster/dist/assets/MarkerCluster.Default.css'
+import MarkerClusterGroup from "react-leaflet-cluster"
 import L from "leaflet"
 
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -41,22 +45,24 @@ export default function DashboardComplaintMap({ complaints }: Props) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {complaints
-  .filter(
-    (c) =>
-      typeof c.latitude === "number" &&
-      typeof c.longitude === "number"
-  )
-  .map((complaint) => (
-    <Marker
-      key={complaint._id}
-      position={[complaint.latitude, complaint.longitude]}
-    >
-      <Popup>
-        <b>{complaint.title}</b>
-      </Popup>
-    </Marker>
-  ))}
+        <MarkerClusterGroup>
+  {complaints
+    .filter(
+      (c) =>
+        typeof c.latitude === "number" &&
+        typeof c.longitude === "number"
+    )
+    .map((complaint) => (
+      <Marker
+        key={complaint._id}
+        position={[complaint.latitude, complaint.longitude]}
+      >
+        <Popup>
+          <b>{complaint.title}</b>
+        </Popup>
+      </Marker>
+    ))}
+</MarkerClusterGroup>
       </MapContainer>
     </div>
   )
