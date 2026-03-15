@@ -29,13 +29,59 @@ if (!user) {
       );
     }
 
-    const { title, description, location, category, state, district, ward } = validation.data;
+    const { title, description, location, category, state, district, ward, image } = validation.data;
 
     // Connect to database
     await connectDB();
 
     // Assign priority based on AI logic
     const priority = assignPriority(title, description, category);
+
+    // AI image validation
+if (image) {
+  const aiCheck = await fetch("http://localhost:11434/api/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "llava",
+      prompt: `
+A user submitted a civic complaint.
+
+Title: "${title}"
+Description: "${description}"
+
+Check if the uploaded image matches this complaint.
+
+Return ONLY JSON:
+
+{
+  "valid": true/false,
+  "reason": "short explanation"
+}
+`,
+      images: [image],
+      stream: false
+    })
+  });
+
+  const aiData = await aiCheck.json();
+
+  try {
+    const parsed = JSON.parse(aiData.response);
+
+    if (!parsed.valid) {
+      return NextResponse.json(
+        { error: "Image does not match complaint", reason: parsed.reason },
+        { status: 400 }
+      );
+    }
+
+  } catch {
+    console.log("AI validation skipped");
+  }
+}
     // Convert location to coordinates
 let latitude = null;
 let longitude = null;

@@ -50,6 +50,8 @@ export const complaintSchema = z.object({
 
   ward: z.string().optional(),
 
+  image: z.string().nullable().optional(),
+
   category: z.enum([
     "Roads",
     "Water",

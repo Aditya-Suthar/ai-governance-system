@@ -161,7 +161,17 @@ if (!location) {
     setIsLoading(true);
 
     try {
-     const submitData = {
+     let imageBase64 = null;
+
+if (formData.photo) {
+  imageBase64 = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(formData.photo!);
+    reader.onload = () => resolve(reader.result);
+  });
+}
+
+const submitData = {
   title: formData.title,
   description: formData.description,
   category: formData.category,
@@ -170,9 +180,9 @@ if (!location) {
   district,
   ward,
   latitude: location?.lat,
-  longitude: location?.lng
+  longitude: location?.lng,
+  image: imageBase64
 };
-
       const response = await fetch('/api/complaints', {
         method: 'POST',
         headers: {
