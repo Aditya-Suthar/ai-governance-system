@@ -4,10 +4,49 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
+import { useEffect } from "react"
+import { useMap } from "react-leaflet"
+import "leaflet.heat"
+
 import 'react-leaflet-cluster/dist/assets/MarkerCluster.css'
 import 'react-leaflet-cluster/dist/assets/MarkerCluster.Default.css'
 import MarkerClusterGroup from "react-leaflet-cluster"
 import L from "leaflet"
+
+interface Complaint {
+  _id: string
+  title: string
+  latitude: number
+  longitude: number
+}
+
+interface Props {
+  complaints: Complaint[]
+}
+
+function HeatLayer({ complaints }: Props) {
+  const map = useMap()
+
+  useEffect(() => {
+    const points = complaints
+      .filter(c => typeof c.latitude === "number" && typeof c.longitude === "number")
+      .map(c => [c.latitude, c.longitude, 0.6])
+
+    const heat = (L as any).heatLayer(points, {
+  radius: 45,
+  blur: 30,
+  maxZoom: 17
+})
+
+    heat.addTo(map)
+
+    return () => {
+      map.removeLayer(heat)
+    }
+  }, [complaints, map])
+
+  return null
+}
 
 delete (L.Icon.Default.prototype as any)._getIconUrl
 
@@ -20,16 +59,7 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 })
 
-interface Complaint {
-  _id: string
-  title: string
-  latitude: number
-  longitude: number
-}
 
-interface Props {
-  complaints: Complaint[]
-}
 
 export default function DashboardComplaintMap({ complaints }: Props) {
   return (
@@ -44,6 +74,7 @@ export default function DashboardComplaintMap({ complaints }: Props) {
           attribution='© OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <HeatLayer complaints={complaints} />
 
         <MarkerClusterGroup>
   {complaints

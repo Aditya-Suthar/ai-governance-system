@@ -51,6 +51,39 @@ export default function Page() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string>('');
 
+  const generateComplaint = async () => {
+
+  console.log("AI button clicked")
+
+  try {
+    console.log("before fetch");
+    const response = await fetch("/api/ai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+  title: formData.title,
+  description: formData.description
+}),
+    });
+
+    console.log("after fetch", response.status);
+
+    const data = await response.json();
+    console.log(data);
+
+    setFormData(prev => ({
+  ...prev,
+  title: data.title || prev.title,
+  description: data.description || data.reply
+}));
+
+  } catch (error) {
+    console.error("AI generation failed:", error);
+  }
+};
+
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -238,6 +271,15 @@ if (!location) {
                 >
                   Description *
                 </label>
+
+                <Button
+  type="button"
+  variant="outline"
+  size="sm"
+  onClick={generateComplaint}
+>
+  Generate with AI
+</Button>
                 <Textarea
                   id="description"
                   name="description"

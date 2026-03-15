@@ -23,6 +23,37 @@ import { AlertCircle, Clock, CheckCircle, ArrowRight } from 'lucide-react';
 import { IComplaint } from '@/lib/models/Complaint';
 
 
+function generateAlerts(complaints: any[]) {
+  const wardCategoryCount: Record<string, number> = {}
+  const alerts: { ward: string; category: string; count: number }[] = []
+
+  complaints.forEach((c) => {
+    if (!c.ward || !c.category) return
+
+    const key = `${c.ward}__${c.category}`
+
+    if (!wardCategoryCount[key]) {
+      wardCategoryCount[key] = 0
+    }
+
+    wardCategoryCount[key]++
+  })
+
+  Object.entries(wardCategoryCount).forEach(([key, count]) => {
+    if (count >= 3) {
+      const [ward, category] = key.split("__")
+
+      alerts.push({
+        ward,
+        category,
+        count,
+      })
+    }
+  })
+
+  return alerts
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
@@ -31,6 +62,7 @@ export default function DashboardPage() {
   const [showAI, setShowAI] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);  
   const [input, setInput] = useState("");
+  const [alertPage, setAlertPage] = useState(0);
 
   const sendMessage = async () => {
   if (!input.trim()) return;
@@ -135,6 +167,14 @@ export default function DashboardPage() {
     resolved: complaints.filter(c => c.status === 'Resolved').length,
   };
 
+  const alerts = generateAlerts(complaints)
+
+  const alertsPerPage = 3;
+
+const visibleAlerts = alerts.slice(
+  alertPage * alertsPerPage,
+  alertPage * alertsPerPage + alertsPerPage
+);
   return (
     <>
       <Navigation />
@@ -208,8 +248,50 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Complaint Map */}
-            <DashboardComplaintMap complaints={complaints as any} />
+            {/* Alerts Section */}
+{alerts.length > 0 && (
+  <div className="mb-6">
+    <Card className="border-red-200 bg-red-50">
+      <CardHeader>
+        <CardTitle className="text-red-700 flex items-center gap-2">
+          ⚠ System Alerts
+        </CardTitle>
+        <CardDescription>
+          Areas with unusually high complaint activity
+        </CardDescription>
+      </CardHeader>
+
+     <CardContent className="space-y-2">
+  {visibleAlerts.map((alert, i) => (
+    <div key={i} className="text-red-700 font-medium">
+      {alert.category} complaints rising in {alert.ward} ({alert.count})
+    </div>
+  ))}
+
+  <div className="flex justify-between mt-4">
+    <Button
+      variant="outline"
+      disabled={alertPage === 0}
+      onClick={() => setAlertPage(alertPage - 1)}
+    >
+      Previous
+    </Button>
+
+    <Button
+      variant="outline"
+      disabled={(alertPage + 1) * alertsPerPage >= alerts.length}
+      onClick={() => setAlertPage(alertPage + 1)}
+    >
+      Next
+    </Button>
+  </div>
+</CardContent>
+    </Card>
+  </div>
+)}
+
+{/* Complaint Map */}
+<DashboardComplaintMap complaints={complaints as any} />
 
             {/* Complaints List Section */}
             <div>

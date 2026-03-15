@@ -11,6 +11,8 @@ const DashboardComplaintMap = dynamic(
   () => import("@/components/maps/DashboardComplaintMap"),
   { ssr: false }
 )
+
+import CitizenProfile from "@/components/CitizenProfile";
 import AIBot from "@/components/AIBot";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -22,7 +24,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Clock, CheckCircle, ArrowRight } from 'lucide-react';
 import { IComplaint } from '@/lib/models/Complaint';
-
+import CitizenReputation from "@/components/CitizenReputation";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -141,32 +143,41 @@ setComplaints(data.complaints);
     <>
       <Navigation />
       <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-8 items-start">
-          <div className={`transition-all duration-300 ${showAI ? "w-[70%]" : "w-full"}`}>
-            {/* Header Section */}
-            <div className="mb-10">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-                <div>
-                  <h1 className="text-4xl font-bold text-gray-900">Project Zero Point</h1>
-                  <p className="text-gray-500 mt-2 text-lg">Track and manage your civic complaints</p>
-                </div>
-                <div className="flex gap-3 flex-wrap">
-                  <Button
-                    onClick={() => setShowAI(!showAI)}
-                    variant="outline"
-                    className="border-gray-300 hover:bg-gray-100"
-                  >
-                    {showAI ? "Hide AI" : "Show AI"} Assistant
-                  </Button>
-                  {user?.role === "citizen" && (
-                <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
-                  <Link href="/complaints/new">+ Report New Complaint</Link>
-                </Button>
-              )}
-                </div>
-              </div>
-            </div>
+<div className="w-full px-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
+<div className="lg:col-span-4">
+{/* Header Section */}
+<div className="mb-10">
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
+    <div>
+      <h1 className="text-4xl font-bold text-gray-900">Project Zero Point</h1>
+      <p className="text-gray-500 mt-2 text-lg">
+        Track and manage your civic complaints
+      </p>
+    </div>
+
+    <div className="flex gap-3 flex-wrap items-center">
+      <Button
+        onClick={() => setShowAI(true)}
+        variant="outline"
+        className="border-gray-300 hover:bg-gray-100"
+      >
+        AI Assistant
+      </Button>
+
+      {user?.role === "citizen" && (
+        <Button
+          asChild
+          size="lg"
+          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+        >
+          <Link href="/complaints/new">+ Report New Complaint</Link>
+        </Button>
+      )}
+    </div>
+    
+  </div>
+</div>
             {/* Statistics Section */}
             <div className="mb-10">
               <h2 className="text-sm font-semibold text-gray-700 mb-4 tracking-wide uppercase">Your Overview</h2>
@@ -210,8 +221,19 @@ setComplaints(data.complaints);
               </div>
             </div>
 
-            {/* Complaint Map */}
-            <DashboardComplaintMap complaints={complaints as any} />
+            {/* Reputation + Map Section */}
+<div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
+
+  {/* Left - Reputation */}
+  <div className="lg:col-span-1">
+    <CitizenReputation complaints={complaints} />
+  </div>
+
+  {/* Center - Map */}
+  <div className="lg:col-span-3">
+    <DashboardComplaintMap complaints={complaints as any} />
+  </div>
+</div>
 
             {/* Complaints List Section */}
             <div>
@@ -295,11 +317,25 @@ setComplaints(data.complaints);
               )}
             </div>
           </div>
-          {showAI && (
-            <div className="w-[30%] sticky top-8">
-              <AIBot />
-            </div>
-          )}
+          <div className="hidden lg:block">
+  <CitizenProfile name={user?.name} role={user?.role} />
+</div>
+{showAI && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+
+    {/* blurred background */}
+    <div
+      className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+      onClick={() => setShowAI(false)}
+    />
+
+    {/* AI popup */}
+    <div className="relative z-[10000] w-[650px]">
+  <AIBot />
+</div>
+
+  </div>
+)}
         </div>
       </main>
     </>
