@@ -66,14 +66,14 @@ export default function ComplaintManagement() {
       const res = await fetch("/api/complaints/" + complaintId)
       const data = await res.json()
 
-      setComplaint(data.complaint)
+      setComplaint(data)
 
       const aiRes = await fetch("/api/ai/classify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: data.complaint.title,
-          description: data.complaint.description
+          title: data.title,
+          description: data.description
         })
       })
 
@@ -81,11 +81,11 @@ export default function ComplaintManagement() {
       setAiResult(aiData.result)
 
       setFormData({
-        status: data.complaint.status,
-        priority: data.complaint.priority,
-        category: data.complaint.category,
-        adminNotes: '',
-      })
+  status: data.status,
+  priority: data.priority,
+  category: data.category,
+  adminNotes: '',
+})
 
     } catch (error) {
       console.error("Failed to load complaint", error)
@@ -390,8 +390,32 @@ export default function ComplaintManagement() {
                   </div>
 
                   <p className="text-xs">
-                    Spam probability: {aiResult.spamProbability}%
-                  </p>
+                  Spam probability: {aiResult.spamProbability}%
+                </p>
+
+                {aiResult.spamProbability > 70 && (
+                  <div className="mt-3 bg-red-100 border border-red-300 p-3 rounded">
+                    <p className="text-sm text-red-700 font-medium">
+                      ⚠ High spam probability detected.
+                    </p>
+
+                    <button
+                      onClick={async () => {
+                        if (confirm("Delete this complaint permanently?")) {
+                          await fetch("/api/complaints/" + complaint._id, {
+                            method: "DELETE"
+                          })
+
+                          alert("Complaint deleted")
+window.location.href = "/admin/complaints"
+                        }
+                      }}
+                      className="mt-2 bg-red-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Delete Permanently
+                    </button>
+                  </div>
+                )}
                 </div>
               )}
 

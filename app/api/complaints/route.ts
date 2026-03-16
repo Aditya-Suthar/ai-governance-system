@@ -37,6 +37,24 @@ if (!user) {
     // Assign priority based on AI logic
     const priority = assignPriority(title, description, category);
 
+    // Spam detection
+let spamProbability = 0;
+let isSpam = false;
+
+const text = (title + " " + description).toLowerCase();
+
+if (text.includes("buy now") || text.includes("visit my site") || text.includes("http")) {
+  spamProbability = 90;
+}
+
+if (text.length < 10) {
+  spamProbability = 70;
+}
+
+if (spamProbability > 70) {
+  isSpam = true;
+}
+
     // AI image validation
 if (image) {
   const aiCheck = await fetch("http://localhost:11434/api/generate", {
@@ -97,19 +115,21 @@ const geo = await geocoder.geocode(`${district}, ${state}, India`);console.log("
 }
 
     // Create complaint
-            const complaint = await Complaint.create({
-          userId: user.userId,
-          title,
-          description,
-          location,
-          state,
-          district,
-          ward,
-          category,
-          priority,
-          latitude,
-          longitude
-        });
+          const complaint = await Complaint.create({
+  userId: user.userId,
+  title,
+  description,
+  location,
+  state,
+  district,
+  ward,
+  category,
+  priority,
+  latitude,
+  longitude,
+  spamProbability,
+  isSpam
+});
 
     return NextResponse.json(
       {

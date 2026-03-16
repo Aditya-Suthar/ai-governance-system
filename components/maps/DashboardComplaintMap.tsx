@@ -3,6 +3,7 @@
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
+import { useRouter } from "next/navigation"
 
 import { useEffect } from "react"
 import { useMap } from "react-leaflet"
@@ -12,6 +13,8 @@ import 'react-leaflet-cluster/dist/assets/MarkerCluster.css'
 import 'react-leaflet-cluster/dist/assets/MarkerCluster.Default.css'
 import MarkerClusterGroup from "react-leaflet-cluster"
 import L from "leaflet"
+
+
 
 interface Complaint {
   _id: string
@@ -61,8 +64,10 @@ L.Icon.Default.mergeOptions({
 
 
 
-export default function DashboardComplaintMap({ complaints }: Props) {
+export default function DashboardComplaintMap({ complaints }: Props) 
+{const router = useRouter()
   return (
+    
     <div className="w-full h-[400px] rounded-xl overflow-hidden">
       <MapContainer
         center={[20.5937, 78.9629]} // center of India
@@ -85,12 +90,24 @@ export default function DashboardComplaintMap({ complaints }: Props) {
     )
     .map((complaint) => (
       <Marker
-        key={complaint._id}
-        position={[complaint.latitude, complaint.longitude]}
-      >
+  key={complaint._id}
+  position={[complaint.latitude, complaint.longitude]}
+  eventHandlers={{
+    click: () => {
+      router.push("/admin/complaints/" + complaint._id)
+    }
+  }}
+>
         <Popup>
-          <b>{complaint.title}</b>
-        </Popup>
+  <div
+    style={{ cursor: "pointer" }}
+    onClick={() => router.push("/admin/complaints/" + complaint._id)}
+  >
+    <b>{complaint.title}</b>
+    <br />
+    Click to open complaint
+  </div>
+</Popup>
       </Marker>
     ))}
 </MarkerClusterGroup>
