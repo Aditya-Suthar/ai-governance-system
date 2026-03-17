@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
   ssr: false,
 });
-import { Country, State, City } from "country-state-city";
+import { State, City } from "country-state-city";
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,6 @@ interface FormData {
   title: string;
   description: string;
   category: string;
-  location: string;
   photo?: File;
 }
 
@@ -34,7 +33,6 @@ export default function Page() {
   title: '',
   description: '',
   category: '',
-  location: '',
   photo: undefined,
 });
 
@@ -50,37 +48,117 @@ export default function Page() {
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string>('');
+  const [aiInput, setAiInput] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
 
-  const generateComplaint = async () => {
+const generateComplaint = async () => {
+  if (!aiInput.trim()) {
+    alert("Please describe your problem first");
+    return;
+  }
 
-  console.log("AI button clicked")
+  setAiLoading(true);
+  console.log("AI button clicked");
 
   try {
     console.log("before fetch");
-    const response = await fetch("/api/ai", {
+
+    const response = await fetch("/api/ai/generate-complaint", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-  title: formData.title,
-  description: formData.description
-}),
+        message: aiInput,
+      }),
     });
 
     console.log("after fetch", response.status);
 
-    const data = await response.json();
-    console.log(data);
+const raw = await response.json();
+console.log("RAW:", raw);
 
-    setFormData(prev => ({
-  ...prev,
-  title: data.title || prev.title,
-  description: data.description || data.reply
-}));
+let text = raw?.response || raw?.description || "";
 
+// remove markdown
+text = text.replace(/```json|```/g, "").trim();
+
+let data: any = null;
+
+try {
+  // try normal parse first
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+
+  if (start !== -1 && end !== -1) {
+    const jsonString = text.substring(start, end + 1);
+    data = JSON.parse(jsonString);
+  }
+} catch (e) {
+  console.log("JSON parse failed, using fallback...");
+}
+
+// 🔥 FALLBACK (THIS SAVES YOU)
+if (!data) {
+  data = {
+    title: text.match(/"title":\s*"([^"]+)"/)?.[1] || "",
+    description: text.match(/"description":\s*"([^"]+)"/)?.[1] || "",
+    category: text.match(/"category":\s*"([^"]+)"/)?.[1] || "Other",
+    state: text.match(/"state":\s*"([^"]+)"/)?.[1] || "",
+    district: text.match(/"district":\s*"([^"]+)"/)?.[1] || "",
+    ward: text.match(/"ward":\s*"([^"]+)"/)?.[1] || "",
+  };
+}
+
+console.log("FINAL CLEAN DATA:", data);
+
+console.log("FINAL CLEAN DATA:", data);
+
+
+    console.log("RAW:", raw);
+    console.log("FINAL CLEAN DATA:", data);
+
+    const categoryMap: Record<string, string> = {
+      road: "Roads",
+      roads: "Roads",
+      water: "Water",
+      electricity: "Electricity",
+      sanitation: "Sanitation",
+      healthcare: "Healthcare",
+      safety: "Safety",
+    };
+
+    const fixedCategory =
+      categoryMap[data.category?.toLowerCase()] || data.category || "";
+
+    setFormData((prev) => ({
+      ...prev,
+      title: data.title || prev.title,
+      description: data.description || prev.description,
+      category: fixedCategory || prev.category,
+    }));
+
+    if (data.state) {
+      const matchedState = states.find(
+        (s) => s.name.toLowerCase() === data.state.toLowerCase()
+      );
+      if (matchedState) {
+        setState(matchedState.isoCode);
+      }
+    }
+
+    if (data.district) {
+      setDistrict(data.district);
+    }
+
+    if (data.ward) {
+      setWard(data.ward);
+    }
   } catch (error) {
     console.error("AI generation failed:", error);
+    alert("AI response broken — try again");
+  } finally {
+    setAiLoading(false);
   }
 };
 
@@ -138,11 +216,6 @@ if (!formData.category) {
   return;
 }
 
-if (!formData.location.trim()) {
-  setErrorMessage('Please enter a location');
-  return;
-}
-
 if (!state) {
   setErrorMessage('Please select a state');
   return;
@@ -175,7 +248,6 @@ const submitData = {
   title: formData.title,
   description: formData.description,
   category: formData.category,
-  location: formData.location,
   state,
   district,
   ward,
@@ -206,7 +278,6 @@ const submitData = {
   title: '',
   description: '',
   category: '',
-  location: '',
   photo: undefined,
 });
       setFileName('');
@@ -252,6 +323,41 @@ const submitData = {
               </div>
             )}
 
+            {/* AI Assistant */}
+<div className="space-y-3 p-4 border border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50 dark:bg-blue-950 mb-6">
+
+  <div className="flex items-center gap-2">
+    🤖
+    <span className="text-sm font-semibold text-blue-900 dark:text-blue-200">
+      AI Complaint Generator
+    </span>
+  </div>
+
+  <Input
+    placeholder="Describe your issue (e.g. broken road, garbage overflow...)"
+    value={aiInput}
+    onChange={(e) => setAiInput(e.target.value)}
+    className="bg-white dark:bg-slate-900"
+  />
+
+  <Button
+    type="button"
+    onClick={generateComplaint}
+    disabled={aiLoading}
+    className="bg-blue-600 hover:bg-blue-700 text-white w-fit"
+  >
+    {aiLoading ? (
+      <>
+        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+        Generating...
+      </>
+    ) : (
+      "✨ Generate with AI"
+    )}
+  </Button>
+
+</div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Title */}
               <div className="space-y-2">
@@ -279,17 +385,10 @@ const submitData = {
                   htmlFor="description"
                   className="block text-sm font-semibold text-slate-900 dark:text-slate-100"
                 >
+
                   Description *
                 </label>
 
-                <Button
-  type="button"
-  variant="outline"
-  size="sm"
-  onClick={generateComplaint}
->
-  Generate with AI
-</Button>
                 <Textarea
                   id="description"
                   name="description"
@@ -330,26 +429,6 @@ const submitData = {
                     <SelectItem value="Safety">Safety</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              {/* Location */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="location"
-                  className="block text-sm font-semibold text-slate-900 dark:text-slate-100"
-                >
-                  Location *
-                </label>
-                <Input
-                  id="location"
-                  name="location"
-                  type="text"
-                  placeholder="Address or location of the issue"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  className="border-slate-300 dark:border-slate-600"
-                />
               </div>
               <div className="mt-4">
   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
