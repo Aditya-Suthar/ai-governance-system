@@ -10,6 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { signIn } from "next-auth/react"
+
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,6 +54,15 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <Button
+  type="button"
+  onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+  className="w-full bg-white text-black border hover:bg-gray-100"
+>
+  Sign in with Google
+</Button>
+
+<div className="text-center text-sm text-gray-500">OR</div>
             <div className="space-y-2">
               <Label htmlFor="role">Account Type</Label>
               <Select value={role} onValueChange={(value) => setRole(value as 'citizen' | 'authority')}>

@@ -21,6 +21,8 @@ export interface IComplaint extends Document {
   category: ComplaintCategory;
   status: ComplaintStatus;
   priority: ComplaintPriority;
+  spamProbability?: number;
+isSpam?: boolean;
   assignedToId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -90,6 +92,16 @@ longitude: {
       type: String,
       enum: ['Low', 'Medium', 'High', 'Critical'],
       default: 'Low',
+    },
+
+    spamProbability: {
+    type: Number,
+      default: 0,
+    },
+
+    isSpam: {
+      type: Boolean,
+      default: false,
     },
     assignedToId: {
       type: Schema.Types.ObjectId,

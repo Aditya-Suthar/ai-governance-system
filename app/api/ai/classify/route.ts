@@ -11,20 +11,41 @@ export async function POST(req: Request) {
     body: JSON.stringify({
       model: "phi3",
       prompt: `
-Return ONLY JSON. No explanation.
+You are an AI used by a government complaint management system.
 
-Classify this civic complaint.
+Your task is to classify citizen complaints and detect spam.
+
+A VALID complaint is related to:
+- roads
+- water supply
+- electricity
+- sanitation
+- healthcare
+- public safety
+- public infrastructure
+
+A complaint is SPAM if it contains:
+- crypto
+- bitcoin
+- trading
+- investment
+- advertisement
+- promotion
+- selling products
+- personal business
+- unrelated topics
 
 Title: ${title}
 Description: ${description}
 
-JSON format:
+Return ONLY JSON:
+
 {
-  "category": "Roads | Water | Electricity | Healthcare | Sanitation | Safety",
-  "categoryConfidence": number,
+  "category": "Roads | Water | Electricity | Healthcare | Sanitation | Safety | Other",
+  "categoryConfidence": 0-100,
   "priority": "Low | Medium | High | Critical",
-  "priorityConfidence": number,
-  "spamProbability": number
+  "priorityConfidence": 0-100,
+  "spamProbability": 0-100
 }
 `,
       stream: false,
