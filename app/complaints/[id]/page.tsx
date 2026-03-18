@@ -81,7 +81,7 @@ export default function ComplaintDetailsPage() {
           throw new Error('Failed to fetch complaint')
         }
         const data = await response.json()
-        setComplaint(data.complaint)
+        setComplaint(data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {

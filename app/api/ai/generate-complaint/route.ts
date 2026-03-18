@@ -5,30 +5,32 @@ export async function POST(req: Request) {
     const { message } = await req.json()
 
    const prompt = `
-You are a JSON generator.
+You are a strict JSON generator.
 
-Convert user input into STRICT JSON.
+Return ONLY valid JSON. No explanation.
 
-RULES:
-- Return ONLY valid JSON
-- No explanation
-- No extra text
-- No comments
-- No sentences outside JSON
+Rules:
+- Use double quotes ONLY
+- No extra fields
+- No text outside JSON
+- Do NOT add comments
+- Do NOT add sentences
+- Do NOT write "to be filled"
+- Always generate realistic Indian location
 
 Format:
 {
   "title": "...",
   "description": "...",
   "category": "Road | Water | Electricity | Sanitation | Other",
-  "state": "...",
-  "district": "...",
+  "state": "Haryana",
+  "district": "Kurukshetra",
   "ward": "..."
 }
 
 Input:
 "${message}"
-`
+`;
 
     const response = await fetch("http://localhost:11434/api/generate", {
       method: "POST",
@@ -44,42 +46,33 @@ Input:
 
     const data = await response.json()
 
-    const text = data.response
+const text = data.response
 const clean = text.replace(/```json|```/g, "").trim()
 
-let parsed;
+let parsed: any;
 
 try {
-  parsed = JSON.parse(clean);
-} catch (err) {
-  console.log("RAW AI OUTPUT:", text);
+  parsed = JSON.parse(clean)
 
-  // 🔥 extract valid JSON part
-  const match = clean.match(/\{[\s\S]*?\}/)
-
-  if (match) {
+  // 🔥 FIX DOUBLE JSON (MAIN BUG)
+  if (typeof parsed.description === "string" && parsed.description.includes("{")) {
     try {
-      parsed = JSON.parse(match[0])
-    } catch {
-      parsed = {
-        title: "",
-        description: clean,
-        category: "Other",
-        state: "",
-        district: "",
-        ward: ""
-      }
-    }
-  } else {
-    parsed = {
-      title: "",
-      description: clean,
-      category: "Other",
-      state: "",
-      district: "",
-      ward: ""
-    }
+      const inner = JSON.parse(parsed.description)
+      parsed = inner
+    } catch {}
   }
+
+} catch (err) {
+  console.log("AI PARSE FAILED:", clean)
+
+  parsed = {
+  title: clean.match(/"title":\s*"([^"]+)"/)?.[1] || "",
+  description: clean.match(/"description":\s*"([^"]+)"/)?.[1] || "",
+  category: clean.match(/"category":\s*"([^"]+)"/)?.[1] || "Other",
+  state: clean.match(/"state":\s*"([^"]+)"/)?.[1] || "",
+  district: clean.match(/"district":\s*"([^"]+)"/)?.[1] || "",
+  ward: clean.match(/"ward":\s*"([^"]+)"/)?.[1] || "",
+}
 }
     return NextResponse.json(parsed)
 

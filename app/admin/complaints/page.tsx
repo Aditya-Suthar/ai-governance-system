@@ -33,6 +33,7 @@ const [complaints, setComplaints] = useState<Complaint[]>([]);  const [isLoading
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [aiQuery, setAiQuery] = useState('');
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'authority')) {
@@ -90,6 +91,27 @@ const [complaints, setComplaints] = useState<Complaint[]>([]);  const [isLoading
     }
   };
 
+ const handleAIQuery = async () => {
+  try {
+    const res = await fetch("/api/ai/filter", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: aiQuery }),
+    });
+
+    const data = await res.json();
+
+    setStatusFilter(data.status || 'all');
+    setPriorityFilter(data.priority || 'all');
+    setCategoryFilter(data.category || 'all');
+
+  } catch (err) {
+    console.error("AI failed", err);
+  }
+};
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'Critical':
@@ -124,7 +146,21 @@ const [complaints, setComplaints] = useState<Complaint[]>([]);  const [isLoading
             </Button>
             <h1 className="text-3xl font-bold text-gray-900">All Complaints</h1>
             <p className="text-gray-600 mt-2">Manage and update complaints submitted by citizens</p>
+
+            <div className="mt-4 mb-6 flex gap-2">
+  <Input
+    placeholder="Ask AI... (e.g. show high priority complaints)"
+    value={aiQuery}
+    onChange={(e) => setAiQuery(e.target.value)}
+  />
+  <Button onClick={handleAIQuery}>
+    Ask AI
+  </Button>
+</div>
+
           </div>
+
+          
 
           {/* Filters */}
           <Card className="mb-8">

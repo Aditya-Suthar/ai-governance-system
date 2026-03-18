@@ -19,15 +19,17 @@ if (!user) {
 }
 
     const body = await request.json();
-    
-    // Validate input
-    const validation = complaintSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.errors },
-        { status: 400 }
-      );
-    }
+console.log("BODY RECEIVED:", body);
+
+// Validate input
+const validation = complaintSchema.safeParse(body);
+if (!validation.success) {
+  console.log("VALIDATION ERRORS:", validation.error.errors);
+  return NextResponse.json(
+    { error: 'Validation failed', details: validation.error.errors },
+    { status: 400 }
+  );
+}
 
     const { title, description, location, category, state, district, ward, image } = validation.data;
 

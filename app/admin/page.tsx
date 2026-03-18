@@ -179,8 +179,9 @@ const visibleAlerts = alerts.slice(
     <>
       <Navigation />
       <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-8 items-start">
-          <div className={`transition-all duration-300 ${showAI ? "w-[70%]" : "w-full"}`}>
+        <div className="w-full px-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-4">
+  <div className={`transition-all duration-300 ${showAI ? "w-[70%]" : "w-full"}`}>
             {/* Header Section */}
             <div className="mb-10">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
@@ -190,12 +191,12 @@ const visibleAlerts = alerts.slice(
                 </div>
                 <div className="flex gap-3 flex-wrap">
                   <Button
-                    onClick={() => setShowAI(!showAI)}
-                    variant="outline"
-                    className="border-gray-300 hover:bg-gray-100"
-                  >
-                    {showAI ? "Hide AI" : "Show AI"} Assistant
-                  </Button>
+                      onClick={() => setShowAI(!showAI)}
+                      variant="outline"
+                      className="border-gray-300 hover:bg-gray-100"
+                    >
+                      {showAI ? "Hide AI" : "Show AI"} Assistant
+                    </Button>
                   {user?.role === "citizen" && (
                 <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
                   <Link href="/complaints/new">+ Report New Complaint</Link>
@@ -321,65 +322,128 @@ const visibleAlerts = alerts.slice(
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-4">
-                  {complaints.map((complaint) => (
-                    <Card 
-                      key={complaint._id?.toString()} 
-                      className="border-0 bg-white shadow-sm hover:shadow-lg transition-all duration-200 hover:border-blue-200 cursor-pointer"
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between gap-6">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="shrink-0">
-                                {getStatusIcon(complaint.status)}
-                              </div>
-                              <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{complaint.title}</h3>
-                            </div>
-                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">{complaint.description}</p>
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              <Badge className={`${getStatusColor(complaint.status)} border-0 font-medium`}>
-                                {complaint.status}
-                              </Badge>
-                              <Badge className={`${getPriorityColor(complaint.priority)} border-0 font-medium`}>
-                                {complaint.priority} Priority
-                              </Badge>
-                              <Badge variant="outline" className="border-gray-200 bg-gray-50">
-                                {complaint.category}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-gray-500 font-medium">
-                              {new Date(complaint.createdAt).toLocaleDateString('en-US', { 
-                                month: 'short', 
-                                day: 'numeric', 
-                                year: 'numeric' 
-                              })}
-                            </p>
-                          </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            asChild 
-                            className="shrink-0 hover:bg-blue-50 text-blue-600 hover:text-blue-700"
-                          >
-                            <Link href={`/admin/complaints/${complaint._id}`} className="gap-2">
-                              View Details
-                              <ArrowRight className="w-4 h-4" />
-                            </Link>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+  <table className="w-full text-sm">
+    
+    {/* HEADER */}
+    <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
+      <tr>
+        <th className="px-6 py-3 text-left">Title</th>
+        <th className="px-6 py-3">Status</th>
+        <th className="px-6 py-3">Priority</th>
+        <th className="px-6 py-3">Category</th>
+        <th className="px-6 py-3">Date</th>
+        <th className="px-6 py-3">Action</th>
+      </tr>
+    </thead>
+
+    {/* BODY */}
+    <tbody className="divide-y">
+      {complaints.map((complaint) => (
+        <tr key={complaint._id?.toString()} className="hover:bg-gray-50 transition">
+          
+          {/* TITLE */}
+          <td className="px-6 py-4 font-medium text-gray-900">
+            {complaint.title}
+          </td>
+
+          {/* STATUS */}
+          <td className="px-6 py-4 text-center">
+            <Badge className={`${getStatusColor(complaint.status)} border-0`}>
+              {complaint.status}
+            </Badge>
+          </td>
+
+          {/* PRIORITY */}
+          <td className="px-6 py-4 text-center">
+            <Badge className={`${getPriorityColor(complaint.priority)} border-0`}>
+              {complaint.priority}
+            </Badge>
+          </td>
+
+          {/* CATEGORY */}
+          <td className="px-6 py-4 text-center">
+            <Badge variant="outline">{complaint.category}</Badge>
+          </td>
+
+          {/* DATE */}
+          <td className="px-6 py-4 text-center text-gray-500">
+            {complaint.createdAt
+              ? new Date(complaint.createdAt).toLocaleDateString()
+              : "N/A"}
+          </td>
+
+          {/* ACTION */}
+          <td className="px-6 py-4 text-center">
+            <Link
+              href={`/admin/complaints/${complaint._id}`}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              View →
+            </Link>
+          </td>
+
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
               )}
             </div>
           </div>
-          {showAI && (
-            <div className="w-[30%] sticky top-8">
-              <AIBot />
-            </div>
-          )}
+          </div>
+          <div className="lg:col-span-1 space-y-6">
+
+  {/* Authority Details */}
+  <Card className="shadow-sm border-0">
+    <CardHeader>
+      <CardTitle className="text-lg">👤 Authority Details</CardTitle>
+      <CardDescription>Your admin profile</CardDescription>
+    </CardHeader>
+
+    <CardContent className="space-y-3 text-sm">
+      <div>
+        <p className="text-gray-500">Name</p>
+        <p className="font-semibold">{user?.name || "Authority User"}</p>
+      </div>
+
+      <div>
+        <p className="text-gray-500">Role</p>
+        <Badge className="bg-blue-100 text-blue-800">
+          {user?.role}
+        </Badge>
+      </div>
+
+      <div>
+        <p className="text-gray-500">Total Complaints</p>
+        <p className="font-semibold">{stats.total}</p>
+      </div>
+
+      <div>
+        <p className="text-gray-500">Pending</p>
+        <p className="text-yellow-600 font-semibold">{stats.pending}</p>
+      </div>
+
+      <div>
+        <p className="text-gray-500">Resolved</p>
+        <p className="text-green-600 font-semibold">{stats.resolved}</p>
+      </div>
+    </CardContent>
+  </Card>
+
+  {/* AI Assistant */}
+  {showAI && (
+    <Card className="shadow-sm border-0">
+      <CardHeader>
+        <CardTitle>🤖 AI Assistant</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <AIBot />
+      </CardContent>
+    </Card>
+  )}
+
+</div>
         </div>
       </main>
     </>

@@ -78,7 +78,7 @@ const generateComplaint = async () => {
 const raw = await response.json();
 console.log("RAW:", raw);
 
-let text = raw?.response || raw?.description || "";
+let text = typeof raw === "string" ? raw : JSON.stringify(raw);
 
 // remove markdown
 text = text.replace(/```json|```/g, "").trim();
@@ -139,14 +139,16 @@ console.log("FINAL CLEAN DATA:", data);
     }));
 
     if (data.state) {
-      const matchedState = states.find(
-        (s) => s.name.toLowerCase() === data.state.toLowerCase()
-      );
-      if (matchedState) {
-        setState(matchedState.isoCode);
-      }
-    }
+  const matchedState = states.find(
+    (s) =>
+      s.name.toLowerCase().includes(data.state.toLowerCase()) ||
+      data.state.toLowerCase().includes(s.name.toLowerCase())
+  );
 
+  if (matchedState) {
+    setState(matchedState.isoCode);
+  }
+}
     if (data.district) {
       setDistrict(data.district);
     }
@@ -247,6 +249,7 @@ if (formData.photo) {
 const submitData = {
   title: formData.title,
   description: formData.description,
+location: location ? `${location.lat},${location.lng}` : "",
   category: formData.category,
   state,
   district,

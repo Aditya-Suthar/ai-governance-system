@@ -4,7 +4,16 @@ import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { useState } from "react";
 
+import L from "leaflet";
 
+
+const icon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
 
 export default function LocationPicker({
   setLocation,
@@ -12,7 +21,7 @@ export default function LocationPicker({
   setLocation: (location: { lat: number; lng: number }) => void;
 }) {
 
-  const [position, setPosition] = useState(null);
+  const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
 
   function LocationMarker() {
     useMapEvents({
@@ -22,7 +31,9 @@ export default function LocationPicker({
       },
     });
 
-    return position === null ? null : <Marker position={position} />;
+    return position === null
+  ? null
+  : <Marker position={[position.lat, position.lng]} icon={icon}  />;
   }
 
   return (
