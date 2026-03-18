@@ -96,24 +96,28 @@ export default function DashboardPage() {
 }, [user, authLoading, router]);
 
   useEffect(() => {
-    const fetchComplaints = async () => {
-      try {
-        const response = await fetch('/api/complaints');
-        if (response.ok) {
-          const data = await response.json();
-          setComplaints(data.complaints);
-        }
-      } catch (error) {
-        console.error('Failed to fetch complaints:', error);
-      } finally {
-        setIsLoading(false);
+  const fetchComplaints = async () => {
+    try {
+      const response = await fetch('/api/complaints');
+      if (response.ok) {
+        const data = await response.json();
+        setComplaints(data.complaints);
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch complaints:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    if (user && user.role === "authority") {
-  fetchComplaints();
-}
-  }, [user]);
+  if (user && user.role === "authority") {
+    fetchComplaints();
+
+    const interval = setInterval(fetchComplaints, 3000); // 🔥 auto refresh every 3 sec
+
+    return () => clearInterval(interval);
+  }
+}, [user]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {

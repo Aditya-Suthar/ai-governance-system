@@ -82,34 +82,48 @@ export default function DashboardComplaintMap({ complaints }: Props)
         <HeatLayer complaints={complaints} />
 
         <MarkerClusterGroup>
-  {complaints
-    .filter(
-      (c) =>
-        typeof c.latitude === "number" &&
-        typeof c.longitude === "number"
-    )
-    .map((complaint) => (
-      <Marker
-  key={complaint._id}
-  position={[complaint.latitude, complaint.longitude]}
-  eventHandlers={{
-    click: () => {
-      router.push("/admin/complaints/" + complaint._id)
+  {complaints.map((complaint: any) => {
+    let lat = complaint.latitude;
+let lng = complaint.longitude;
+
+if (lat === undefined || lng === undefined) {
+  lat = complaint.location?.lat;
+  lng = complaint.location?.lng;
+}
+
+lat = Number(lat);
+lng = Number(lng);
+
+    if (
+      typeof lat !== "number" ||
+      typeof lng !== "number"
+    ) {
+      return null
     }
-  }}
->
+
+    return (
+      <Marker
+        key={complaint._id}
+        position={[lat, lng]}
+        eventHandlers={{
+          click: () => {
+            router.push("/admin/complaints/" + complaint._id)
+          }
+        }}
+      >
         <Popup>
-  <div
-    style={{ cursor: "pointer" }}
-    onClick={() => router.push("/admin/complaints/" + complaint._id)}
-  >
-    <b>{complaint.title}</b>
-    <br />
-    Click to open complaint
-  </div>
-</Popup>
+          <div
+            style={{ cursor: "pointer" }}
+            onClick={() => router.push("/admin/complaints/" + complaint._id)}
+          >
+            <b>{complaint.title}</b>
+            <br />
+            Click to open complaint
+          </div>
+        </Popup>
       </Marker>
-    ))}
+    )
+  })}
 </MarkerClusterGroup>
       </MapContainer>
     </div>
